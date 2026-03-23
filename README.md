@@ -63,14 +63,11 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 Create a `.env.local` file for APIs that require keys:
 
 ```env
-THREATFOX_API_KEY=your_key
-URLHAUS_API_KEY=your_key
-MALWAREBAZAAR_API_KEY=your_key
-ABUSEIPDB_API_KEY=your_key
-URLSCAN_API_KEY=your_key
+ABUSECH_AUTH_KEY=your_key      # Free at https://auth.abuse.ch — used by ThreatFox, URLhaus, MalwareBazaar
+ABUSEIPDB_API_KEY=your_key     # Free at https://www.abuseipdb.com — 1,000 requests/day
 ```
 
-All features work without API keys — panels that require them show setup instructions.
+Most features work without API keys. Panels that require them show setup instructions.
 
 ## Deployment
 
