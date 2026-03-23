@@ -40,9 +40,9 @@ export function MapControls({
     useDashboardStore();
 
   return (
-    <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+    <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-[1000] flex flex-col gap-2">
       {/* Main control card */}
-      <div className="bg-[#0d1528]/90 backdrop-blur-md border border-[#1a2744] rounded-lg p-3 w-[200px]">
+      <div className="bg-[#0d1528]/90 backdrop-blur-md border border-[#1a2744] rounded-lg p-2 sm:p-3 w-[140px] sm:w-[200px]">
         {/* Header with event count */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
@@ -82,11 +82,11 @@ export function MapControls({
           </button>
         </div>
 
-        {/* Severity filters */}
-        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
+        {/* Severity filters - hidden on mobile */}
+        <p className="hidden sm:block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
           Severity
         </p>
-        <div className="grid grid-cols-4 gap-1 mb-3">
+        <div className="hidden sm:grid grid-cols-4 gap-1 mb-3">
           {(
             Object.entries(severityLabels) as [ThreatEvent['severity'], string][]
           ).map(([severity, label]) => {
@@ -124,11 +124,11 @@ export function MapControls({
           })}
         </div>
 
-        {/* Type filters */}
-        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
+        {/* Type filters - hidden on mobile */}
+        <p className="hidden sm:block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
           Type
         </p>
-        <div className="flex flex-wrap gap-1">
+        <div className="hidden sm:flex flex-wrap gap-1">
           {THREAT_TYPES.map((type) => {
             const active = mapFilters.types.has(type);
             return (

@@ -49,7 +49,6 @@ const MitreMatrixPanel = dynamic(() => import('@/components/mitre/MitreMatrixPan
   loading: () => <LoadingSkeleton count={4} />,
 });
 
-
 const ThreatIntelPanel = dynamic(() => import('@/components/threat-intel/ThreatIntelPanel').then(m => ({ default: m.ThreatIntelPanel })), {
   loading: () => <LoadingSkeleton count={4} />,
 });
@@ -102,6 +101,7 @@ function ActivePanel({ panelId }: { panelId: PanelId }) {
 export function DashboardShell() {
   const activePanel = useDashboardStore((s) => s.activePanel);
   const [lastRefresh, setLastRefresh] = useState<string>('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const update = () => {
@@ -121,16 +121,16 @@ export function DashboardShell() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#060a13]">
-      <Sidebar />
+      <Sidebar mobileOpen={mobileMenuOpen} onMobileClose={() => setMobileMenuOpen(false)} />
       <div className="flex flex-col flex-1 min-w-0">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-4">
+        <Header onMenuToggle={() => setMobileMenuOpen((v) => !v)} />
+        <main className="flex-1 overflow-y-auto p-2 sm:p-3 md:p-4">
           <ActivePanel panelId={activePanel} />
         </main>
-        <div className="h-8 flex items-center justify-between px-4 bg-[#080e1c]/60 border-t border-[#1a2744] text-[11px] text-slate-500 flex-shrink-0">
+        <div className="h-7 md:h-8 flex items-center justify-between px-3 md:px-4 bg-[#080e1c]/60 border-t border-[#1a2744] text-[10px] md:text-[11px] text-slate-500 flex-shrink-0">
           <span>AEGIS v1.0</span>
-          <div className="flex items-center gap-4">
-            <span>APIs Active: 8/8</span>
+          <div className="flex items-center gap-2 md:gap-4">
+            <span className="hidden sm:inline">APIs Active: 8/8</span>
             <span>Last Refresh: {lastRefresh}</span>
           </div>
         </div>

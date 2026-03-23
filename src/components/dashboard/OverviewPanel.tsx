@@ -125,9 +125,9 @@ export function OverviewPanel() {
 
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* TOP ROW - Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-4">
         <StatCard
           title="Total CVEs"
           value={totalCVEs}
@@ -178,7 +178,7 @@ export function OverviewPanel() {
       </div>
 
       {/* THREAT MAP + NEWS SIDEBAR */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 sm:gap-4">
         {/* Map - takes 3/4 width */}
         <GlowCard glowColor="cyan" className="p-0 overflow-hidden lg:col-span-3">
           <div className="p-3 pb-0 flex items-center justify-between">
@@ -189,7 +189,7 @@ export function OverviewPanel() {
               LIVE
             </span>
           </div>
-          <div className="h-[420px] rounded-b-xl overflow-hidden mt-2">
+          <div className="h-[280px] sm:h-[350px] lg:h-[420px] rounded-b-xl overflow-hidden mt-2">
             <ThreatMap />
           </div>
         </GlowCard>
@@ -240,7 +240,7 @@ export function OverviewPanel() {
       </div>
 
       {/* BOTTOM ROW */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-4">
         {/* Recent CVEs */}
         <GlowCard glowColor="red">
           <h3 className="text-sm font-semibold text-slate-300 mb-3">

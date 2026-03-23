@@ -305,8 +305,8 @@ export default function ThreatMap() {
         onClear={clearEvents}
       />
 
-      {/* Legend (bottom-left) */}
-      <div className="absolute bottom-4 left-4 z-[1000] bg-[#0d1528]/90 backdrop-blur-md border border-[#1a2744] rounded-lg p-3">
+      {/* Legend (bottom-left) - hidden on mobile */}
+      <div className="hidden sm:block absolute bottom-4 left-4 z-[1000] bg-[#0d1528]/90 backdrop-blur-md border border-[#1a2744] rounded-lg p-3">
         <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">
           Severity
         </p>

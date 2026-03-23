@@ -21,7 +21,7 @@ export function GlowCard({ children, className, glowColor = 'cyan' }: GlowCardPr
   return (
     <div
       className={cn(
-        'bg-[#0d1528] border border-[#1a2744] rounded-xl p-4',
+        'bg-[#0d1528] border border-[#1a2744] rounded-xl p-3 sm:p-4',
         'transition-all duration-300',
         glowColorMap[glowColor],
         className
