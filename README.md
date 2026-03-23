@@ -14,7 +14,6 @@ A real-time cybersecurity intelligence dashboard for security analysts and resea
 - **Exploit DB Search** — Search for public exploits
 - **Ransomware Tracker** — Track active ransomware groups and recent victims
 - **Malware Bazaar** — Browse recent malware samples with hashes and signatures
-- **Recon Tools** — WHOIS, DNS lookup, subdomain finder (crt.sh)
 - **Threat Intel** — AbuseIPDB, URLScan.io, phishing feed integration
 - **Vulnerability Calendar** — Patch Tuesday tracker for Microsoft, Adobe, Oracle
 - **Analytics** — CVSS distribution, attack vectors, vulnerability trends (live from NVD)
@@ -40,7 +39,11 @@ A real-time cybersecurity intelligence dashboard for security analysts and resea
 | MalwareBazaar (abuse.ch) | Free key | Malware samples |
 | MITRE ATT&CK | None | APT groups, techniques, tactics |
 | AbuseIPDB | Free key | IP abuse reports |
-| URLScan.io | Free key | URL scanning |
+| URLScan.io | None | URL scanning |
+| GitHub Advisory DB | None | Exploit / security advisory search |
+| Ransomware.live | None | Ransomware group & victim tracking |
+| OpenPhish | None | Phishing URL feed |
+| PhishTank | None | Phishing URL database |
 | crt.sh | None | Certificate transparency / subdomain discovery |
 | RDAP | None | WHOIS / domain registration |
 | DNS-over-HTTPS | None | DNS lookups |
