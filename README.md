@@ -34,6 +34,7 @@ A real-time cybersecurity intelligence dashboard for security analysts and resea
 | NVD CVE API | None | CVE/vulnerability search |
 | Shodan InternetDB | None | Open ports & vulns per IP |
 | ip-api.com | None | IP geolocation |
+| Mappls (MapmyIndia) | Free key | India-compliant map tiles |
 | ThreatFox (abuse.ch) | Free key | IOC feed |
 | URLhaus (abuse.ch) | Free key | Malicious URL database |
 | MalwareBazaar (abuse.ch) | Free key | Malware samples |
@@ -66,8 +67,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 Create a `.env.local` file for APIs that require keys:
 
 ```env
-ABUSECH_AUTH_KEY=your_key      # Free at https://auth.abuse.ch — used by ThreatFox, URLhaus, MalwareBazaar
-ABUSEIPDB_API_KEY=your_key     # Free at https://www.abuseipdb.com — 1,000 requests/day
+ABUSECH_AUTH_KEY=your_key              # Free at https://auth.abuse.ch — used by ThreatFox, URLhaus, MalwareBazaar
+ABUSEIPDB_API_KEY=your_key             # Free at https://www.abuseipdb.com — 1,000 requests/day
+NEXT_PUBLIC_MAPPLS_API_KEY=your_key    # Free at https://apis.mappls.com/console/ — India-compliant map tiles
 ```
 
 Most features work without API keys. Panels that require them show setup instructions.
