@@ -1,0 +1,682 @@
+{
+  "tactics": [
+    {
+      "id": "TA0043",
+      "stixId": "x-mitre-tactic--daa4cbb1-b4f4-4723-a824-7f1efd6e0592",
+      "name": "Reconnaissance",
+      "description": "The adversary is trying to gather information they can use to plan future operations.",
+      "shortName": "reconnaissance"
+    },
+    {
+      "id": "TA0042",
+      "stixId": "x-mitre-tactic--d679bca2-e57d-4935-8650-8031c87a4400",
+      "name": "Resource Development",
+      "description": "The adversary is trying to establish resources they can use to support operations.",
+      "shortName": "resource-development"
+    },
+    {
+      "id": "TA0001",
+      "stixId": "x-mitre-tactic--ffd5bcee-6e16-4dd2-8eca-7b3beedf33ca",
+      "name": "Initial Access",
+      "description": "The adversary is trying to get into your network.",
+      "shortName": "initial-access"
+    },
+    {
+      "id": "TA0002",
+      "stixId": "x-mitre-tactic--4ca45d45-df4d-4613-8980-bac22d278fa5",
+      "name": "Execution",
+      "description": "The adversary is trying to run malicious code.",
+      "shortName": "execution"
+    },
+    {
+      "id": "TA0003",
+      "stixId": "x-mitre-tactic--5bc1d813-693e-4823-9961-abf9571c0ca0",
+      "name": "Persistence",
+      "description": "The adversary is trying to maintain their foothold.",
+      "shortName": "persistence"
+    },
+    {
+      "id": "TA0004",
+      "stixId": "x-mitre-tactic--5e29b093-294e-49e9-a803-dab3d73b77dd",
+      "name": "Privilege Escalation",
+      "description": "The adversary is trying to gain higher-level permissions.",
+      "shortName": "privilege-escalation"
+    },
+    {
+      "id": "TA0005",
+      "stixId": "x-mitre-tactic--78b23412-0651-46d7-a540-170a1ce8bd5a",
+      "name": "Defense Evasion",
+      "description": "The adversary is trying to avoid being detected.",
+      "shortName": "defense-evasion"
+    },
+    {
+      "id": "TA0006",
+      "stixId": "x-mitre-tactic--2558fd61-8c75-4730-94c4-11926db2a263",
+      "name": "Credential Access",
+      "description": "The adversary is trying to steal account names and passwords.",
+      "shortName": "credential-access"
+    },
+    {
+      "id": "TA0007",
+      "stixId": "x-mitre-tactic--c17c5845-175e-4421-9713-829d0573dbc9",
+      "name": "Discovery",
+      "description": "The adversary is trying to figure out your environment.",
+      "shortName": "discovery"
+    },
+    {
+      "id": "TA0008",
+      "stixId": "x-mitre-tactic--7141578b-e50b-4dcc-bfa4-08a8dd689e9e",
+      "name": "Lateral Movement",
+      "description": "The adversary is trying to move through your environment.",
+      "shortName": "lateral-movement"
+    },
+    {
+      "id": "TA0009",
+      "stixId": "x-mitre-tactic--d108ce10-2c4b-4f40-a8a5-7e7ba5e13b93",
+      "name": "Collection",
+      "description": "The adversary is trying to gather data of interest to their goal.",
+      "shortName": "collection"
+    },
+    {
+      "id": "TA0011",
+      "stixId": "x-mitre-tactic--f72804c5-f15a-449e-a5da-2eecd181f813",
+      "name": "Command and Control",
+      "description": "The adversary is trying to communicate with compromised systems to control them.",
+      "shortName": "command-and-control"
+    },
+    {
+      "id": "TA0010",
+      "stixId": "x-mitre-tactic--7a0d2aa5-71a4-4428-8b1e-6063f8e8b202",
+      "name": "Exfiltration",
+      "description": "The adversary is trying to steal data.",
+      "shortName": "exfiltration"
+    },
+    {
+      "id": "TA0040",
+      "stixId": "x-mitre-tactic--5569339b-94c2-49ee-afb3-2222936571d8",
+      "name": "Impact",
+      "description": "The adversary is trying to manipulate, interrupt, or destroy your systems and data.",
+      "shortName": "impact"
+    }
+  ],
+  "techniques": [
+    {
+      "id": "T1566",
+      "stixId": "attack-pattern--a62a8db3-f23a-4d8f-afd6-9dbc77e7813b",
+      "name": "Phishing",
+      "description": "Adversaries may send phishing messages to gain access to victim systems.",
+      "tacticRefs": ["TA0001"],
+      "platforms": ["Linux", "macOS", "Windows", "SaaS", "Office 365", "Google Workspace"],
+      "isSubtechnique": false,
+      "detection": "Network intrusion detection systems and email gateways can be used to detect phishing.",
+      "url": "https://attack.mitre.org/techniques/T1566"
+    },
+    {
+      "id": "T1566.001",
+      "stixId": "attack-pattern--2e34237d-8574-43f6-aace-ae2915de8597",
+      "name": "Spearphishing Attachment",
+      "description": "Adversaries may send spearphishing emails with a malicious attachment in an attempt to gain access.",
+      "tacticRefs": ["TA0001"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": true,
+      "parentId": "T1566",
+      "url": "https://attack.mitre.org/techniques/T1566/001"
+    },
+    {
+      "id": "T1059",
+      "stixId": "attack-pattern--7385dfaf-6886-4229-9ecd-6fd2b9820cb4",
+      "name": "Command and Scripting Interpreter",
+      "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries.",
+      "tacticRefs": ["TA0002"],
+      "platforms": ["Linux", "macOS", "Windows", "Network"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1059"
+    },
+    {
+      "id": "T1059.001",
+      "stixId": "attack-pattern--970a3432-3237-47ad-bcca-7d8cbb217736",
+      "name": "PowerShell",
+      "description": "Adversaries may abuse PowerShell commands and scripts for execution.",
+      "tacticRefs": ["TA0002"],
+      "platforms": ["Windows"],
+      "isSubtechnique": true,
+      "parentId": "T1059",
+      "url": "https://attack.mitre.org/techniques/T1059/001"
+    },
+    {
+      "id": "T1547",
+      "stixId": "attack-pattern--1ecb2399-e8f2-4b5d-9c73-1e79d67aae3a",
+      "name": "Boot or Logon Autostart Execution",
+      "description": "Adversaries may configure system settings to automatically execute a program during system boot or logon.",
+      "tacticRefs": ["TA0003", "TA0004"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1547"
+    },
+    {
+      "id": "T1547.001",
+      "stixId": "attack-pattern--9efb1ea7-c37b-4595-9640-b7f0c6e14bb3",
+      "name": "Registry Run Keys / Startup Folder",
+      "description": "Adversaries may achieve persistence by adding a program to a startup folder or referencing it with a Registry run key.",
+      "tacticRefs": ["TA0003", "TA0004"],
+      "platforms": ["Windows"],
+      "isSubtechnique": true,
+      "parentId": "T1547",
+      "url": "https://attack.mitre.org/techniques/T1547/001"
+    },
+    {
+      "id": "T1027",
+      "stixId": "attack-pattern--b3d682b6-98f2-4fb0-aa3b-b4df007ca70a",
+      "name": "Obfuscated Files or Information",
+      "description": "Adversaries may attempt to make an executable or file difficult to discover or analyze by encrypting, encoding, or otherwise obfuscating its contents.",
+      "tacticRefs": ["TA0005"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1027"
+    },
+    {
+      "id": "T1003",
+      "stixId": "attack-pattern--0a3ead4e-6d47-4ccb-854c-a6a4f9d96b22",
+      "name": "OS Credential Dumping",
+      "description": "Adversaries may attempt to dump credentials to obtain account login and credential material.",
+      "tacticRefs": ["TA0006"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1003"
+    },
+    {
+      "id": "T1003.001",
+      "stixId": "attack-pattern--65f2d882-3f41-4d48-8a06-29af77ec9f90",
+      "name": "LSASS Memory",
+      "description": "Adversaries may attempt to access credential material stored in the process memory of the LSASS.",
+      "tacticRefs": ["TA0006"],
+      "platforms": ["Windows"],
+      "isSubtechnique": true,
+      "parentId": "T1003",
+      "url": "https://attack.mitre.org/techniques/T1003/001"
+    },
+    {
+      "id": "T1082",
+      "stixId": "attack-pattern--354a7f88-aef9-4e24-9428-7c1b7b8a37e8",
+      "name": "System Information Discovery",
+      "description": "An adversary may attempt to get detailed information about the operating system and hardware.",
+      "tacticRefs": ["TA0007"],
+      "platforms": ["Linux", "macOS", "Windows", "Network"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1082"
+    },
+    {
+      "id": "T1021",
+      "stixId": "attack-pattern--54a649ff-439a-41a4-9856-8d144a2551ba",
+      "name": "Remote Services",
+      "description": "Adversaries may use valid accounts to log into a service specifically designed to accept remote connections.",
+      "tacticRefs": ["TA0008"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1021"
+    },
+    {
+      "id": "T1021.001",
+      "stixId": "attack-pattern--eb062747-2193-45de-8fa2-e62549c37ddf",
+      "name": "Remote Desktop Protocol",
+      "description": "Adversaries may use Valid Accounts to log into a computer using the Remote Desktop Protocol.",
+      "tacticRefs": ["TA0008"],
+      "platforms": ["Windows"],
+      "isSubtechnique": true,
+      "parentId": "T1021",
+      "url": "https://attack.mitre.org/techniques/T1021/001"
+    },
+    {
+      "id": "T1071",
+      "stixId": "attack-pattern--355be19c-ffc9-46d5-8d50-d6a036c675b6",
+      "name": "Application Layer Protocol",
+      "description": "Adversaries may communicate using application layer protocols to avoid detection.",
+      "tacticRefs": ["TA0011"],
+      "platforms": ["Linux", "macOS", "Windows", "Network"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1071"
+    },
+    {
+      "id": "T1071.001",
+      "stixId": "attack-pattern--df8b2a25-8bdf-4856-953c-a04372b1c161",
+      "name": "Web Protocols",
+      "description": "Adversaries may communicate using application layer protocols associated with web traffic.",
+      "tacticRefs": ["TA0011"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": true,
+      "parentId": "T1071",
+      "url": "https://attack.mitre.org/techniques/T1071/001"
+    },
+    {
+      "id": "T1048",
+      "stixId": "attack-pattern--a19e86f8-1c0a-4fea-8407-23b73d615776",
+      "name": "Exfiltration Over Alternative Protocol",
+      "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing command and control channel.",
+      "tacticRefs": ["TA0010"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1048"
+    },
+    {
+      "id": "T1486",
+      "stixId": "attack-pattern--b80d107d-fa0d-4b60-9684-b0433e8bdba0",
+      "name": "Data Encrypted for Impact",
+      "description": "Adversaries may encrypt data on target systems or on large numbers of systems in a network to interrupt availability.",
+      "tacticRefs": ["TA0040"],
+      "platforms": ["Linux", "macOS", "Windows", "IaaS"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1486"
+    },
+    {
+      "id": "T1190",
+      "stixId": "attack-pattern--3f886f2a-874f-4333-b794-aa6075009b1c",
+      "name": "Exploit Public-Facing Application",
+      "description": "Adversaries may attempt to take advantage of a weakness in an Internet-facing computer or program using software, data, or commands.",
+      "tacticRefs": ["TA0001"],
+      "platforms": ["Linux", "macOS", "Windows", "Containers", "IaaS", "Network"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1190"
+    },
+    {
+      "id": "T1078",
+      "stixId": "attack-pattern--b17a1a56-e99c-403c-8948-561df0cffe81",
+      "name": "Valid Accounts",
+      "description": "Adversaries may obtain and abuse credentials of existing accounts as a means of gaining Initial Access, Persistence, Privilege Escalation, or Defense Evasion.",
+      "tacticRefs": ["TA0001", "TA0003", "TA0004", "TA0005"],
+      "platforms": ["Linux", "macOS", "Windows", "SaaS", "IaaS", "Azure AD", "Office 365", "Google Workspace", "Containers", "Network"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1078"
+    },
+    {
+      "id": "T1055",
+      "stixId": "attack-pattern--43e7dc91-05b2-474c-b9ac-2ed4fe101f4d",
+      "name": "Process Injection",
+      "description": "Adversaries may inject code into processes in order to evade process-based defenses as well as possibly elevate privileges.",
+      "tacticRefs": ["TA0004", "TA0005"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1055"
+    },
+    {
+      "id": "T1053",
+      "stixId": "attack-pattern--35dd844a-b219-4e2b-a6bb-efa9a75995a9",
+      "name": "Scheduled Task/Job",
+      "description": "Adversaries may abuse task scheduling functionality to facilitate initial or recurring execution of malicious code.",
+      "tacticRefs": ["TA0002", "TA0003", "TA0004"],
+      "platforms": ["Linux", "macOS", "Windows", "Containers"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1053"
+    },
+    {
+      "id": "T1105",
+      "stixId": "attack-pattern--e6919abc-99f9-4c6c-95a5-14761e7b2add",
+      "name": "Ingress Tool Transfer",
+      "description": "Adversaries may transfer tools or other files from an external system into a compromised environment.",
+      "tacticRefs": ["TA0011"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1105"
+    },
+    {
+      "id": "T1140",
+      "stixId": "attack-pattern--3ccef7ae-cb5e-48f6-8302-897105fbf55c",
+      "name": "Deobfuscate/Decode Files or Information",
+      "description": "Adversaries may use obfuscated files or information to hide artifacts of an intrusion from analysis.",
+      "tacticRefs": ["TA0005"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1140"
+    },
+    {
+      "id": "T1204",
+      "stixId": "attack-pattern--8c32eb4d-805f-4fc5-bf60-c4d476c131b5",
+      "name": "User Execution",
+      "description": "An adversary may rely upon specific actions by a user in order to gain execution.",
+      "tacticRefs": ["TA0002"],
+      "platforms": ["Linux", "macOS", "Windows", "Containers", "IaaS"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1204"
+    },
+    {
+      "id": "T1036",
+      "stixId": "attack-pattern--42e8de7b-37b2-4258-905a-6897815e58e0",
+      "name": "Masquerading",
+      "description": "Adversaries may attempt to manipulate features of their artifacts to make them appear legitimate or benign to users and security tools.",
+      "tacticRefs": ["TA0005"],
+      "platforms": ["Linux", "macOS", "Windows", "Containers"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1036"
+    },
+    {
+      "id": "T1095",
+      "stixId": "attack-pattern--c21d5a77-d422-4a69-acd7-2c53c1faa34b",
+      "name": "Non-Application Layer Protocol",
+      "description": "Adversaries may use a non-application layer protocol for communication between host and C2 server.",
+      "tacticRefs": ["TA0011"],
+      "platforms": ["Linux", "macOS", "Windows", "Network"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1095"
+    },
+    {
+      "id": "T1562",
+      "stixId": "attack-pattern--3d333250-30e4-4a82-9edc-756c68afc529",
+      "name": "Impair Defenses",
+      "description": "Adversaries may maliciously modify components of a victim environment in order to hinder or disable defensive mechanisms.",
+      "tacticRefs": ["TA0005"],
+      "platforms": ["Linux", "macOS", "Windows", "Containers", "IaaS", "Network"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1562"
+    },
+    {
+      "id": "T1047",
+      "stixId": "attack-pattern--01a5a209-b94c-450b-b7f9-946497d91055",
+      "name": "Windows Management Instrumentation",
+      "description": "Adversaries may abuse WMI to execute malicious commands and payloads.",
+      "tacticRefs": ["TA0002"],
+      "platforms": ["Windows"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1047"
+    },
+    {
+      "id": "T1560",
+      "stixId": "attack-pattern--53ac20cd-aca3-406e-9aa0-9fc7fdc60a5a",
+      "name": "Archive Collected Data",
+      "description": "An adversary may compress and/or encrypt data that is collected prior to exfiltration.",
+      "tacticRefs": ["TA0009"],
+      "platforms": ["Linux", "macOS", "Windows"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1560"
+    },
+    {
+      "id": "T1592",
+      "stixId": "attack-pattern--09312b1a-c3c6-4b45-9844-3ccc78e5d82f",
+      "name": "Gather Victim Host Information",
+      "description": "Adversaries may gather information about the victim's hosts that can be used during targeting.",
+      "tacticRefs": ["TA0043"],
+      "platforms": ["PRE"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1592"
+    },
+    {
+      "id": "T1583",
+      "stixId": "attack-pattern--79da0971-3147-4af6-a4f7-e36b5a7d1864",
+      "name": "Acquire Infrastructure",
+      "description": "Adversaries may buy, lease, or rent infrastructure that can be used during targeting.",
+      "tacticRefs": ["TA0042"],
+      "platforms": ["PRE"],
+      "isSubtechnique": false,
+      "url": "https://attack.mitre.org/techniques/T1583"
+    }
+  ],
+  "groups": [
+    {
+      "id": "G0007",
+      "stixId": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c",
+      "name": "APT28",
+      "description": "APT28 is a threat group that has been attributed to Russia's General Staff Main Intelligence Directorate (GRU) 85th Main Special Service Center (GTsSS) military unit 26165.",
+      "aliases": ["APT28", "Fancy Bear", "Sofacy", "Pawn Storm", "Sednit", "Strontium", "Tsar Team"],
+      "country": "Russia",
+      "techniqueIds": ["T1566", "T1059", "T1078", "T1027", "T1071", "T1190"],
+      "softwareIds": ["S0154", "S0005"],
+      "url": "https://attack.mitre.org/groups/G0007"
+    },
+    {
+      "id": "G0016",
+      "stixId": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542",
+      "name": "APT29",
+      "description": "APT29 is a threat group that has been attributed to Russia's Foreign Intelligence Service (SVR). They have operated since at least 2008.",
+      "aliases": ["APT29", "Cozy Bear", "The Dukes", "Nobelium", "Midnight Blizzard"],
+      "country": "Russia",
+      "techniqueIds": ["T1566", "T1059.001", "T1078", "T1027", "T1071.001", "T1055"],
+      "softwareIds": ["S0154", "S0038"],
+      "url": "https://attack.mitre.org/groups/G0016"
+    },
+    {
+      "id": "G0032",
+      "stixId": "intrusion-set--c93fccb1-e8e8-42cf-ae33-2ad1d183913a",
+      "name": "Lazarus Group",
+      "description": "Lazarus Group is a North Korean state-sponsored cyber threat group attributed to the Reconnaissance General Bureau.",
+      "aliases": ["Lazarus Group", "Hidden Cobra", "Guardians of Peace", "ZINC", "Diamond Sleet"],
+      "country": "North Korea",
+      "techniqueIds": ["T1566.001", "T1059", "T1547.001", "T1027", "T1486", "T1105"],
+      "softwareIds": ["S0154", "S0387"],
+      "url": "https://attack.mitre.org/groups/G0032"
+    },
+    {
+      "id": "G0096",
+      "stixId": "intrusion-set--68391641-859f-4f9a-9a1e-3e5cf71bf1f9",
+      "name": "APT41",
+      "description": "APT41 is a threat group that carries out Chinese state-sponsored espionage activity in addition to financially motivated activity.",
+      "aliases": ["APT41", "Double Dragon", "Barium", "Winnti Group", "Brass Typhoon"],
+      "country": "China",
+      "techniqueIds": ["T1190", "T1059", "T1053", "T1078", "T1055", "T1071"],
+      "softwareIds": ["S0154", "S0385"],
+      "url": "https://attack.mitre.org/groups/G0096"
+    },
+    {
+      "id": "G0010",
+      "stixId": "intrusion-set--fa80571d-d465-4f84-b669-e57c0b8e5b53",
+      "name": "Turla",
+      "description": "Turla is a Russian-based threat group that has infected victims in over 45 countries, spanning a range of industries including government, embassies, military, education, research and pharmaceutical companies since 2004.",
+      "aliases": ["Turla", "Waterbug", "WhiteBear", "Venomous Bear", "Snake", "Krypton", "Secret Blizzard"],
+      "country": "Russia",
+      "techniqueIds": ["T1566", "T1059.001", "T1547", "T1027", "T1071", "T1048"],
+      "softwareIds": ["S0154", "S0022"],
+      "url": "https://attack.mitre.org/groups/G0010"
+    },
+    {
+      "id": "G0034",
+      "stixId": "intrusion-set--381fcf73-60f6-4ab2-9991-6af3cbc35192",
+      "name": "Sandworm Team",
+      "description": "Sandworm Team is a destructive threat group attributed to Russia's GRU Main Center for Special Technologies (GTsST) military unit 74455.",
+      "aliases": ["Sandworm Team", "Voodoo Bear", "ELECTRUM", "Telebots", "Iron Viking", "Seashell Blizzard"],
+      "country": "Russia",
+      "techniqueIds": ["T1190", "T1059", "T1547", "T1486", "T1562", "T1105"],
+      "softwareIds": ["S0154", "S0368"],
+      "url": "https://attack.mitre.org/groups/G0034"
+    },
+    {
+      "id": "G0059",
+      "stixId": "intrusion-set--f512de42-f76b-40d2-9923-59e7dbdfec35",
+      "name": "Magic Hound",
+      "description": "Magic Hound is an Iranian-sponsored threat group that has conducted espionage campaigns targeting energy, government, and technology sectors in Europe and North America.",
+      "aliases": ["Magic Hound", "Charming Kitten", "Phosphorus", "APT35", "Mint Sandstorm"],
+      "country": "Iran",
+      "techniqueIds": ["T1566", "T1059", "T1078", "T1003", "T1082", "T1105"],
+      "softwareIds": ["S0154"],
+      "url": "https://attack.mitre.org/groups/G0059"
+    },
+    {
+      "id": "G0094",
+      "stixId": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f",
+      "name": "Kimsuky",
+      "description": "Kimsuky is a North Korea-based cyber espionage group that has been active since at least 2012, primarily targeting South Korean think tanks and government entities.",
+      "aliases": ["Kimsuky", "Velvet Chollima", "Thallium", "Black Banshee", "Emerald Sleet"],
+      "country": "North Korea",
+      "techniqueIds": ["T1566.001", "T1059.001", "T1547.001", "T1003", "T1082", "T1071.001"],
+      "softwareIds": ["S0154"],
+      "url": "https://attack.mitre.org/groups/G0094"
+    },
+    {
+      "id": "G0050",
+      "stixId": "intrusion-set--4a2ce82e-1a74-468a-a6fb-bbead541383c",
+      "name": "APT32",
+      "description": "APT32 is a suspected Vietnam-based threat group that has been active since at least 2014 targeting foreign corporations with a vested interest in Vietnam's manufacturing, consumer products, and hospitality sectors.",
+      "aliases": ["APT32", "OceanLotus", "SeaLotus", "Canvas Cyclone"],
+      "country": "Vietnam",
+      "techniqueIds": ["T1566", "T1059", "T1053", "T1027", "T1036", "T1071"],
+      "softwareIds": ["S0154", "S0373"],
+      "url": "https://attack.mitre.org/groups/G0050"
+    },
+    {
+      "id": "G0027",
+      "stixId": "intrusion-set--6a2e693f-24e5-451a-9f88-b36a108e5f1f",
+      "name": "Threat Group-3390",
+      "description": "Threat Group-3390 is a Chinese threat group that has extensively used strategic web compromises to target victims. The group has been active since at least 2010.",
+      "aliases": ["Threat Group-3390", "TG-3390", "Emissary Panda", "APT27", "Bronze Union"],
+      "country": "China",
+      "techniqueIds": ["T1190", "T1059", "T1078", "T1003", "T1021.001", "T1105"],
+      "softwareIds": ["S0154", "S0005"],
+      "url": "https://attack.mitre.org/groups/G0027"
+    },
+    {
+      "id": "G0074",
+      "stixId": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542",
+      "name": "Dragonfly",
+      "description": "Dragonfly is a cyber espionage group that has been attributed to Russia's Federal Security Service (FSB). Active since at least 2010, primarily targeting the energy sector.",
+      "aliases": ["Dragonfly", "Energetic Bear", "Berserk Bear", "Havex", "Crouching Yeti"],
+      "country": "Russia",
+      "techniqueIds": ["T1190", "T1566", "T1078", "T1082", "T1021", "T1560"],
+      "softwareIds": ["S0154"],
+      "url": "https://attack.mitre.org/groups/G0074"
+    },
+    {
+      "id": "G0045",
+      "stixId": "intrusion-set--6eded342-33e5-4451-b6b2-e1c62c2d2e6b",
+      "name": "menuPass",
+      "description": "menuPass is a threat group that has been active since at least 2006, attributed to Chinese Ministry of State Security's (MSS) Tianjin State Security Bureau.",
+      "aliases": ["menuPass", "APT10", "Stone Panda", "Red Apollo", "POTASSIUM"],
+      "country": "China",
+      "techniqueIds": ["T1566.001", "T1059.001", "T1078", "T1003.001", "T1021.001", "T1048"],
+      "softwareIds": ["S0154", "S0056"],
+      "url": "https://attack.mitre.org/groups/G0045"
+    }
+  ],
+  "software": [
+    {
+      "id": "S0154",
+      "stixId": "tool--afc079f3-c0ea-4096-b75d-3f05338b7f60",
+      "name": "Cobalt Strike",
+      "description": "Cobalt Strike is a commercial, full-featured, remote access tool that bills itself as adversary simulation software.",
+      "type": "tool",
+      "platforms": ["Windows", "Linux", "macOS"],
+      "aliases": ["Cobalt Strike", "CobaltStrike"]
+    },
+    {
+      "id": "S0005",
+      "stixId": "malware--7bec698a-7e20-4571-8b2a-c836e3fc7708",
+      "name": "Mimikatz",
+      "description": "Mimikatz is a credential dumper capable of obtaining plaintext Windows account logins and passwords.",
+      "type": "tool",
+      "platforms": ["Windows"],
+      "aliases": ["Mimikatz"]
+    },
+    {
+      "id": "S0038",
+      "stixId": "malware--18854f55-ac7c-4634-bd9a-352b07c9ee92",
+      "name": "Duqu",
+      "description": "Duqu is a malware platform that appears to be closely related to the Stuxnet worm.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["Duqu"]
+    },
+    {
+      "id": "S0387",
+      "stixId": "malware--95e2cbae-284b-41ce-b604-115f2cf4130c",
+      "name": "KeyBoy",
+      "description": "KeyBoy is a custom malware used by threat groups for data collection and exfiltration.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["KeyBoy"]
+    },
+    {
+      "id": "S0385",
+      "stixId": "malware--80c815b3-9b25-4b1a-a280-5c35a62dc4f3",
+      "name": "njRAT",
+      "description": "njRAT is a remote access trojan first observed in 2012, commonly used by threat actors in the Middle East.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["njRAT", "Bladabindi"]
+    },
+    {
+      "id": "S0022",
+      "stixId": "malware--2eb9b131-d333-4a48-9eb4-d8dec46c19ee",
+      "name": "Uroburos",
+      "description": "Uroburos is a rootkit used by Turla. It intercepts network traffic and can exfiltrate data.",
+      "type": "malware",
+      "platforms": ["Windows", "Linux"],
+      "aliases": ["Uroburos", "Snake", "Turla rootkit"]
+    },
+    {
+      "id": "S0368",
+      "stixId": "malware--94379dec-5c87-49db-b36e-66abc0b81344",
+      "name": "NotPetya",
+      "description": "NotPetya is malware that was used by Sandworm Team in a worldwide attack starting on June 27, 2017.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["NotPetya", "Petya", "Nyetya", "ExPetr"]
+    },
+    {
+      "id": "S0373",
+      "stixId": "malware--afc079f3-c0ea-4096-b75d-3f05338b7f60",
+      "name": "Astaroth",
+      "description": "Astaroth is a Trojan and information stealer known to affect companies in Europe and Brazil.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["Astaroth", "Guildma"]
+    },
+    {
+      "id": "S0056",
+      "stixId": "malware--19854f55-ac7c-4634-bd9a-352b07c9ee78",
+      "name": "Net Crawler",
+      "description": "Net Crawler is a network-propagating worm used by threat actors to move laterally within compromised networks.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["Net Crawler"]
+    },
+    {
+      "id": "S0260",
+      "stixId": "malware--d3afa961-a80c-4f68-a16c-d4a2a5b30e5c",
+      "name": "InvisiMole",
+      "description": "InvisiMole is a modular spyware that has been used by threat groups since at least 2013, targeting a small number of high-profile victims.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["InvisiMole"]
+    },
+    {
+      "id": "S0266",
+      "stixId": "malware--f3c544dc-673c-4ef8-a850-b985c86a4f04",
+      "name": "TrickBot",
+      "description": "TrickBot is a Trojan/botnet that primarily targets financial institutions, later expanded to deliver ransomware.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["TrickBot", "Trickster", "TheTrick"]
+    },
+    {
+      "id": "S0367",
+      "stixId": "malware--eac3d77f-2b46-49e7-a02a-436f2d93b092",
+      "name": "Emotet",
+      "description": "Emotet is a modular malware variant which is primarily used as a downloader for other malware variants.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["Emotet", "Geodo"]
+    },
+    {
+      "id": "S0483",
+      "stixId": "malware--04378e79-4387-468a-a8f7-f974b8254e44",
+      "name": "IcedID",
+      "description": "IcedID is a modular banking trojan first discovered in 2017, used by multiple groups to deliver additional payloads.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["IcedID", "BokBot"]
+    },
+    {
+      "id": "S0650",
+      "stixId": "malware--657e2192-1345-4a52-9a5e-b2d3e3f2c7a1",
+      "name": "QakBot",
+      "description": "QakBot is a modular banking trojan active since 2007, commonly distributed through phishing emails with malicious attachments.",
+      "type": "malware",
+      "platforms": ["Windows"],
+      "aliases": ["QakBot", "Qbot", "QuakBot", "Pinkslipbot"]
+    },
+    {
+      "id": "S0029",
+      "stixId": "tool--ff6caf67-ea1f-4895-947e-4032214e1e85",
+      "name": "PsExec",
+      "description": "PsExec is a free Microsoft tool that can be used to execute a process on another computer.",
+      "type": "tool",
+      "platforms": ["Windows"],
+      "aliases": ["PsExec"]
+    }
+  ]
+}
