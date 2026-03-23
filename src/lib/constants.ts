@@ -42,7 +42,6 @@ export const PANEL_CONFIG = [
   { id: 'analytics', label: 'Analytics', icon: 'BarChart3' },
   { id: 'malware', label: 'Malware', icon: 'Bug' },
   { id: 'mitre', label: 'MITRE ATT&CK', icon: 'Shield' },
-  { id: 'recon', label: 'Recon Tools', icon: 'Scan' },
   { id: 'threat-intel', label: 'Threat Intel', icon: 'Eye' },
   { id: 'exploits', label: 'Exploits', icon: 'Flame' },
   { id: 'vuln-calendar', label: 'Vuln Calendar', icon: 'Calendar' },

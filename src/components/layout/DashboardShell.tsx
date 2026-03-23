@@ -49,9 +49,6 @@ const MitreMatrixPanel = dynamic(() => import('@/components/mitre/MitreMatrixPan
   loading: () => <LoadingSkeleton count={4} />,
 });
 
-const ReconPanel = dynamic(() => import('@/components/recon/ReconPanel').then(m => ({ default: m.ReconPanel })), {
-  loading: () => <LoadingSkeleton count={4} />,
-});
 
 const ThreatIntelPanel = dynamic(() => import('@/components/threat-intel/ThreatIntelPanel').then(m => ({ default: m.ThreatIntelPanel })), {
   loading: () => <LoadingSkeleton count={4} />,
@@ -91,8 +88,6 @@ function ActivePanel({ panelId }: { panelId: PanelId }) {
       return <MalwareBazaarPanel />;
     case 'mitre':
       return <MitreMatrixPanel />;
-    case 'recon':
-      return <ReconPanel />;
     case 'threat-intel':
       return <ThreatIntelPanel />;
     case 'exploits':
