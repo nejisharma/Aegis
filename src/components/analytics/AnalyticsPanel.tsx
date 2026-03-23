@@ -27,6 +27,8 @@ import {
   Bug,
   Fingerprint,
   Globe,
+  Crosshair,
+  Shield,
 } from 'lucide-react';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
@@ -161,6 +163,36 @@ export function AnalyticsPanel() {
       .slice(0, 8);
   }, [malwareData]);
 
+  // --- Top Attacking Countries (source of attacks in last 60s) ---
+  const topAttackers = useMemo(() => {
+    const counts: Record<string, { count: number; code: string }> = {};
+    events.forEach((e) => {
+      if (!counts[e.sourceCountry]) {
+        counts[e.sourceCountry] = { count: 0, code: e.sourceCountryCode };
+      }
+      counts[e.sourceCountry].count++;
+    });
+    return Object.entries(counts)
+      .map(([country, { count, code }]) => ({ country, count, code }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  }, [events]);
+
+  // --- Top Targeted Countries (destination of attacks in last 60s) ---
+  const topTargets = useMemo(() => {
+    const counts: Record<string, { count: number; code: string }> = {};
+    events.forEach((e) => {
+      if (!counts[e.targetCountry]) {
+        counts[e.targetCountry] = { count: 0, code: e.targetCountryCode };
+      }
+      counts[e.targetCountry].count++;
+    });
+    return Object.entries(counts)
+      .map(([country, { count, code }]) => ({ country, count, code }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  }, [events]);
+
   const isLoading = mitreLoading;
 
   if (isLoading) {
@@ -193,6 +225,83 @@ export function AnalyticsPanel() {
             Live metrics from threat feeds, MITRE ATT&CK & simulated events
           </p>
         </div>
+      </div>
+
+      {/* Top Attackers & Targets */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Attacking Countries */}
+        <GlowCard glowColor="red">
+          <h3 className="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
+            <Crosshair className="h-4 w-4 text-red-400" />
+            Top Attacking Countries (Last 60s)
+            <span className="ml-auto text-[10px] text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">LIVE</span>
+          </h3>
+          {topAttackers.length > 0 ? (
+            <div className="space-y-2">
+              {topAttackers.map((item, i) => {
+                const maxCount = topAttackers[0]?.count || 1;
+                const pct = (item.count / maxCount) * 100;
+                return (
+                  <div key={item.country} className="flex items-center gap-3">
+                    <span className="text-xs text-slate-500 w-4 text-right font-mono">{i + 1}</span>
+                    <span className="text-xs font-medium text-slate-300 w-28 truncate">{item.country}</span>
+                    <div className="flex-1 h-4 bg-slate-800/50 rounded overflow-hidden">
+                      <div
+                        className="h-full rounded transition-all duration-500"
+                        style={{
+                          width: `${pct}%`,
+                          background: `linear-gradient(90deg, #ef4444${i === 0 ? '' : '80'}, #f97316${i === 0 ? '' : '60'})`,
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono text-red-400 w-8 text-right">{item.count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="h-48 flex items-center justify-center text-sm text-slate-500">
+              Waiting for threat events...
+            </div>
+          )}
+        </GlowCard>
+
+        {/* Top Targeted Countries */}
+        <GlowCard glowColor="blue">
+          <h3 className="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
+            <Shield className="h-4 w-4 text-blue-400" />
+            Top Targeted Countries (Last 60s)
+            <span className="ml-auto text-[10px] text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">LIVE</span>
+          </h3>
+          {topTargets.length > 0 ? (
+            <div className="space-y-2">
+              {topTargets.map((item, i) => {
+                const maxCount = topTargets[0]?.count || 1;
+                const pct = (item.count / maxCount) * 100;
+                return (
+                  <div key={item.country} className="flex items-center gap-3">
+                    <span className="text-xs text-slate-500 w-4 text-right font-mono">{i + 1}</span>
+                    <span className="text-xs font-medium text-slate-300 w-28 truncate">{item.country}</span>
+                    <div className="flex-1 h-4 bg-slate-800/50 rounded overflow-hidden">
+                      <div
+                        className="h-full rounded transition-all duration-500"
+                        style={{
+                          width: `${pct}%`,
+                          background: `linear-gradient(90deg, #3b82f6${i === 0 ? '' : '80'}, #06b6d4${i === 0 ? '' : '60'})`,
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono text-blue-400 w-8 text-right">{item.count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="h-48 flex items-center justify-center text-sm text-slate-500">
+              Waiting for threat events...
+            </div>
+          )}
+        </GlowCard>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
