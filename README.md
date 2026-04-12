@@ -2,6 +2,10 @@
 
 A real-time cybersecurity intelligence dashboard for security analysts and researchers. Built with Next.js, featuring live threat visualization, CVE search, APT tracking, and more — powered entirely by free APIs.
 
+
+## Live
+https://aegis.neeraj.ca
+
 ## Features
 
 - **Live Threat Map** — Animated global threat visualization with attack lines and pulsing markers
@@ -87,3 +91,13 @@ Or use any Node.js hosting platform.
 ## License
 
 MIT
+
+
+## Author
+
+Neeraj Sharma
+https://neeraj.ca
+
+---
+
+Built with Claude Code. ♥
