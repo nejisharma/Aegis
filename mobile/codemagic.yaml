@@ -1,0 +1,151 @@
+# Aegis mobile — CI builds.
+#
+# iOS is built here because the dev machine is Windows; Android is built
+# locally (see README.md) and only needs the android-aab workflow when you
+# want a signed .aab without the local toolchain.
+#
+# This is a managed Expo (CNG) app: ios/ and android/ are NOT in git, so
+# every build regenerates them with `expo prebuild` from app.json.
+#
+# Same setup as Mind Clutter on this account:
+#  1. Teams → Integrations → App Store Connect: API key `codemagic_asc_api_key`.
+#  2. Environment variables → group `appstore_signing` holding
+#     CERTIFICATE_PRIVATE_KEY (RSA PEM, unencoded, SECURE). Groups are
+#     per-app, so add it to THIS app even though the other apps have it.
+#  3. Environment variables → group `aegis-env` holding
+#     EXPO_PUBLIC_API_URL=https://aegis.neeraj.ca
+#  4. Set APP_ID below to the App Store Connect numeric id once the app
+#     record for `ca.neeraj.aegis` exists.
+#  5. Android (optional): group `aegis-android` with CM_KEYSTORE (base64),
+#     CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD.
+#
+# The working directory is `mobile/` inside the Aegis repo.
+
+definitions:
+  env_versions: &env_versions
+    node: 24.13.0
+    xcode: latest
+    cocoapods: default
+
+workflows:
+  ios-testflight:
+    name: iOS → TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: codemagic_asc_api_key
+    environment:
+      <<: *env_versions
+      groups:
+        - aegis-env
+        - appstore_signing
+      vars:
+        APP_ID: "0" # TODO after creating the App Store Connect record
+    scripts:
+      - name: Install dependencies
+        script: |
+          cd mobile
+          npm ci --legacy-peer-deps
+
+      - name: Guard env
+        script: |
+          case "${EXPO_PUBLIC_API_URL:-https://aegis.neeraj.ca}" in
+            http://*) echo "API URL must be https for App Transport Security."; exit 1 ;;
+          esac
+
+      - name: Typecheck and test
+        script: |
+          cd mobile
+          npx tsc --noEmit
+          npx jest --silent
+
+      - name: Fetch or create the signing certificate and profile
+        script: |
+          set -e
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
+            echo "CERTIFICATE_PRIVATE_KEY is not set — add it (SECURE) to the appstore_signing group on this app."
+            exit 1
+          fi
+          keychain initialize
+          app-store-connect fetch-signing-files "ca.neeraj.aegis" \
+            --type IOS_APP_STORE \
+            --platform IOS \
+            --certificate-key "@env:CERTIFICATE_PRIVATE_KEY" \
+            --create
+          keychain add-certificates
+
+      - name: Generate the native iOS project
+        script: |
+          cd mobile
+          npx expo prebuild --platform ios --clean --no-install
+          cd ios && pod install
+
+      - name: Set the next build number
+        script: |
+          cd mobile/ios
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_ID" 2>/dev/null || echo 0)
+          agvtool new-version -all $((LATEST + 1))
+
+      - name: Build the signed archive
+        script: |
+          cd mobile/ios
+          WORKSPACE=$(ls -d *.xcworkspace | head -1)
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "Building $SCHEME from $WORKSPACE"
+          xcode-project use-profiles
+          if ! xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME"; then
+            echo "──────── xcodebuild errors ────────"
+            grep -hE "error:|fatal error:|Undefined symbol|linker command failed" \
+              /tmp/xcodebuild_logs/*.log | tail -60 || echo "(no error: lines found in the log)"
+            exit 1
+          fi
+    artifacts:
+      - mobile/ios/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - mobile/ios/build/*.dSYM.zip
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+      email:
+        recipients:
+          - me@neeraj.ca
+        notify:
+          success: true
+          failure: true
+
+  android-aab:
+    name: Android → signed .aab
+    max_build_duration: 45
+    instance_type: mac_mini_m2
+    environment:
+      <<: *env_versions
+      java: 17
+      groups:
+        - aegis-env
+        - aegis-android
+    scripts:
+      - name: Install dependencies
+        script: |
+          cd mobile
+          npm ci --legacy-peer-deps
+      - name: Typecheck and test
+        script: |
+          cd mobile
+          npx tsc --noEmit
+          npx jest --silent
+      - name: Generate the native Android project
+        script: |
+          cd mobile
+          npx expo prebuild --platform android --clean --no-install
+      - name: Build signed bundle
+        script: |
+          cd mobile/android
+          echo "$CM_KEYSTORE" | base64 --decode > "$CM_BUILD_DIR/keystore.jks"
+          ./gradlew bundleRelease \
+            -Pandroid.injected.signing.store.file="$CM_BUILD_DIR/keystore.jks" \
+            -Pandroid.injected.signing.store.password="$CM_KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$CM_KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$CM_KEY_PASSWORD"
+    artifacts:
+      - mobile/android/app/build/outputs/bundle/release/*.aab
