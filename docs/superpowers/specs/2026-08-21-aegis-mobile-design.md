@@ -12,7 +12,7 @@ No ads in v1. Leave one seam (`src/components/AdSlot.tsx`, renders nothing) so A
 
 | Topic | Decision |
 |---|---|
-| Framework | Expo SDK 54 (managed, CNG — `ios/` and `android/` not committed), expo-router, TypeScript. Same pattern as MindClutter. |
+| Framework | Expo SDK 57 / RN 0.86 (what `create-expo-app@latest` produced on 2026-08-21; managed, CNG — `ios/` and `android/` not committed), expo-router, TypeScript. Same pattern as MindClutter. |
 | Map | `@maplibre/maplibre-react-native` with the **same CartoDB dark raster tiles** and the **same `india-boundary.geojson` overlay** as the website (Survey of India external boundary, styled `#4a4a4a`, 0.8px, 60%). Not `react-native-maps`: Apple/Google render disputed borders per user region and cannot be overridden cleanly. No Google Maps key. |
 | Backend | Existing Next.js `/api/*` routes at aegis.neeraj.ca. Mobile never calls third-party APIs directly; no third-party keys ship in the binary. |
 | Push | Expo Push Service. Detection job = **Vercel Cron** → `/api/cron/notify` every 30 min. State (device tokens, prefs, last-seen IDs) in **Upstash Redis** via `@upstash/redis` REST (free tier). |
@@ -95,6 +95,13 @@ vercel.json                   crons: [{ path: "/api/cron/notify", schedule: "*/3
 - Privacy labels: no data collected except the anonymous push token ("Device ID — app functionality, not linked to user"). Link the site's privacy notice from Settings.
 - MalwareBazaar screen shows hashes/metadata only; no sample download links.
 - `ITSAppUsesNonExemptEncryption: false`.
+
+## Added during build (user requests)
+
+- Map zoom +/− buttons, pinch/double-tap zoom, and a maximize button opening a full-screen map.
+- Tapping a map marker or a list row opens an event detail sheet (same fields as the website popup plus coordinates and a type description).
+- Error states distinguish **no network** (probe to gstatic `generate_204` fails) from **server maintenance** (probe succeeds but aegis.neeraj.ca does not answer / 5xx) and **upstream source down** (502/504), each with its own illustration.
+- Web `/api/cve` gained `days` (≤120) and `severity` params so Home and Analytics use genuinely recent CVEs.
 
 ## Out of scope (v1)
 
