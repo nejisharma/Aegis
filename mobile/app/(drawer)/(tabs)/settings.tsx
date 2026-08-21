@@ -2,15 +2,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import Constants from 'expo-constants';
 import { Bell, BellOff, ExternalLink, Globe } from 'lucide-react-native';
-import { Screen } from '../../src/components/Screen';
-import { Card, SectionHeader } from '../../src/components/ui';
-import { openUrl } from '../../src/lib/browser';
-import { SITE_URL } from '../../src/lib/constants';
-import { CATEGORY_META, DEFAULT_PREFS, loadPrefs, loadToken } from '../../src/notifications/prefs';
-import { disablePush, registerForPush, setPushPref, type RegisterStatus } from '../../src/notifications/register';
-import { colors } from '../../src/theme/colors';
-import { radius, spacing } from '../../src/theme/spacing';
-import type { PushPrefs } from '../../src/api/types';
+import { Screen } from '../../../src/components/Screen';
+import { ScreenTitle } from '../../../src/components/ScreenTitle';
+import { Card, SectionHeader } from '../../../src/components/ui';
+import { openUrl } from '../../../src/lib/browser';
+import { SITE_URL } from '../../../src/lib/constants';
+import { CATEGORY_META, DEFAULT_PREFS, loadPrefs, loadToken } from '../../../src/notifications/prefs';
+import { disablePush, registerForPush, setPushPref, type RegisterStatus } from '../../../src/notifications/register';
+import { colors } from '../../../src/theme/colors';
+import { radius, spacing } from '../../../src/theme/spacing';
+import type { PushPrefs } from '../../../src/api/types';
 
 export default function SettingsScreen() {
   const [prefs, setPrefs] = useState<PushPrefs>(DEFAULT_PREFS);
@@ -51,7 +52,7 @@ export default function SettingsScreen() {
 
   return (
     <Screen scroll edges={['top', 'left', 'right']}>
-      <Text style={s.h1}>Settings</Text>
+      <ScreenTitle title="Settings" />
 
       <SectionHeader title="Push notifications" />
       <View style={{ paddingHorizontal: spacing.lg }}>

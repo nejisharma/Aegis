@@ -103,6 +103,9 @@ vercel.json                   crons: [{ path: "/api/cron/notify", schedule: "*/3
 - Error states distinguish **no network** (probe to gstatic `generate_204` fails) from **server maintenance** (probe succeeds but aegis.neeraj.ca does not answer / 5xx) and **upstream source down** (502/504), each with its own illustration.
 - Web `/api/cve` gained `days` (≤120) and `severity` params so Home and Analytics use genuinely recent CVEs.
 
+- **Phish or Not?** swipe game (`app/phish-game.tsx`, logic in `src/lib/phish-game.ts`): 300 cards (100 easy/medium/hard, 50 % phishing within each), rounds of 3 + 4 + 3, swipe left = phish / right = legit, tells revealed per card, streak bonus, grade + personal best; recently seen ids excluded from the next rounds.
+- **Drawer sidebar** (`app/(drawer)/_layout.tsx`, `src/components/DrawerContent.tsx`) wrapping the tabs; hamburger in every tab title (`ScreenTitle`).
+
 ## Out of scope (v1)
 
 Ads, accounts, ransomware / Patch-Tuesday notifications, recon tools, animated attack-line tweening at web fidelity, dedicated tablet layouts.

@@ -2,7 +2,7 @@ import React from 'react';
 import type { ColorValue } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Newspaper, Radar, Search, Settings, Shield } from 'lucide-react-native';
-import { colors } from '../../src/theme/colors';
+import { colors } from '../../../src/theme/colors';
 
 type IconProps = { color: ColorValue; size: number };
 

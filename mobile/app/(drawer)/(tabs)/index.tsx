@@ -1,19 +1,20 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Pause, Play } from 'lucide-react-native';
-import { Screen } from '../../src/components/Screen';
-import { ThreatMap } from '../../src/components/ThreatMap';
-import { EventDetailSheet } from '../../src/components/EventDetailSheet';
-import { CVSSBadge, ListRow, OfflineBanner, SectionHeader, SeverityDot, Skeleton, StatCard } from '../../src/components/ui';
-import { useSimulatedThreats } from '../../src/hooks/useSimulatedThreats';
-import { useRecentCriticalCves } from '../../src/hooks/useApi';
-import { SEVERITY_COLORS, THREAT_TYPE_LABELS } from '../../src/lib/constants';
-import { summarizeCve } from '../../src/lib/cvss';
-import { timeAgo, truncate } from '../../src/lib/format';
-import { colors } from '../../src/theme/colors';
-import { spacing } from '../../src/theme/spacing';
-import type { ThreatEvent } from '../../src/api/types';
+import { Gamepad2, Pause, Play } from 'lucide-react-native';
+import { Screen } from '../../../src/components/Screen';
+import { ScreenTitle } from '../../../src/components/ScreenTitle';
+import { ThreatMap } from '../../../src/components/ThreatMap';
+import { EventDetailSheet } from '../../../src/components/EventDetailSheet';
+import { CVSSBadge, ListRow, OfflineBanner, SectionHeader, SeverityDot, Skeleton, StatCard } from '../../../src/components/ui';
+import { useSimulatedThreats } from '../../../src/hooks/useSimulatedThreats';
+import { useRecentCriticalCves } from '../../../src/hooks/useApi';
+import { SEVERITY_COLORS, THREAT_TYPE_LABELS } from '../../../src/lib/constants';
+import { summarizeCve } from '../../../src/lib/cvss';
+import { timeAgo, truncate } from '../../../src/lib/format';
+import { colors } from '../../../src/theme/colors';
+import { spacing } from '../../../src/theme/spacing';
+import type { ThreatEvent } from '../../../src/api/types';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function HomeScreen() {
 
   const header = (
     <View>
-      <Text style={s.h1}>Aegis</Text>
+      <ScreenTitle title="Aegis" />
       <OfflineBanner visible={critical.isOffline} />
       <View style={s.statsRow}>
         <StatCard label="Critical" value={stats.critical} color={colors.critical} />
@@ -64,6 +65,15 @@ export default function HomeScreen() {
 
   const footer = (
     <View>
+      <Pressable onPress={() => router.push('/phish-game')} style={s.gameBanner}>
+        <View style={s.gameIcon}>
+          <Gamepad2 size={20} color={colors.accent} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={s.gameTitle}>Phish or Not?</Text>
+          <Text style={s.gameSub}>Swipe through 10 messages and spot the phishing. Can you beat your best?</Text>
+        </View>
+      </Pressable>
       <SectionHeader title="Latest critical CVEs" />
       {critical.isLoading && !critical.data ? (
         <Skeleton lines={4} />
@@ -155,4 +165,19 @@ const s = StyleSheet.create({
   eventMeta: { color: colors.muted, fontSize: 11, marginTop: 2 },
   sev: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6 },
   empty: { color: colors.muted, fontSize: 13, textAlign: 'center', padding: spacing.lg },
+  gameBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    padding: spacing.md,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(34,211,238,0.4)',
+    backgroundColor: colors.accentDim,
+  },
+  gameIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  gameTitle: { color: colors.text, fontSize: 14, fontWeight: '800' },
+  gameSub: { color: colors.subtle, fontSize: 12, marginTop: 2 },
 });

@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { openUrl } from '../../src/lib/browser';
-import { ErrorState } from '../../src/components/ErrorState';
-import { Screen } from '../../src/components/Screen';
-import { Chip, EmptyState, OfflineBanner, Skeleton } from '../../src/components/ui';
-import { useNews } from '../../src/hooks/useApi';
-import { NEWS_SOURCES } from '../../src/lib/constants';
-import { timeAgo } from '../../src/lib/format';
-import { colors } from '../../src/theme/colors';
-import { spacing } from '../../src/theme/spacing';
-import type { NewsItem } from '../../src/api/types';
+import { openUrl } from '../../../src/lib/browser';
+import { ErrorState } from '../../../src/components/ErrorState';
+import { Screen } from '../../../src/components/Screen';
+import { ScreenTitle } from '../../../src/components/ScreenTitle';
+import { Chip, EmptyState, OfflineBanner, Skeleton } from '../../../src/components/ui';
+import { useNews } from '../../../src/hooks/useApi';
+import { NEWS_SOURCES } from '../../../src/lib/constants';
+import { timeAgo } from '../../../src/lib/format';
+import { colors } from '../../../src/theme/colors';
+import { spacing } from '../../../src/theme/spacing';
+import type { NewsItem } from '../../../src/api/types';
 
 export default function NewsScreen() {
   const [source, setSource] = useState<string | null>(null);
@@ -22,7 +23,7 @@ export default function NewsScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right']}>
-      <Text style={s.h1}>Security News</Text>
+      <ScreenTitle title="Security News" />
       <OfflineBanner visible={isOffline} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips} style={{ flexGrow: 0, height: 52 }}>
         <Chip label="All" active={source === null} onPress={() => setSource(null)} />

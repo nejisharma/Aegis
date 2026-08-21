@@ -65,7 +65,7 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: colors.bg },
           }}
         >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
         </Stack>
       </SWRConfig>
     </GestureHandlerRootView>

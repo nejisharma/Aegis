@@ -13,6 +13,8 @@ Design spec: `../docs/superpowers/specs/2026-08-21-aegis-mobile-design.md`.
 | Search | CVE (NVD) · IOC (ThreatFox, URLhaus, AbuseIPDB, MalwareBazaar, VirusTotal) · IP Intel (GeoIP + Shodan InternetDB) · Exploits (GitHub Advisory DB) |
 | Intel | APT Tracker, MITRE ATT&CK (tactic → technique drill-down), Ransomware, Malware Bazaar, Phishing feed, Vuln Calendar, Analytics |
 | Settings | Push notification toggles (Critical CVEs, News digest), links |
+| Phish or Not? | Swipe game: 10 cards per round (3 easy / 4 medium / 3 hard) drawn from 300 hand-written phishing/legit messages in `src/data/phish-cards.ts`; tells shown after each swipe; personal best persisted |
+| Sidebar | Hamburger on every tab opens a drawer listing every page |
 
 Everything fetched is cached to AsyncStorage, so each screen renders the last data instantly and offline.
 

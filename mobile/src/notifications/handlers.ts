@@ -8,7 +8,7 @@ export function routeForPushUrl(url: unknown): Href | null {
   const m = url.match(/^aegis:\/\/(.*)$/);
   if (!m) return null;
   const path = m[1].replace(/\/+$/, '');
-  if (path === 'news') return '/(tabs)/news';
+  if (path === 'news') return '/news';
   const cve = path.match(/^cve\/(CVE-\d{4}-\d{4,})$/i);
   if (cve) return { pathname: '/cve/[id]', params: { id: cve[1].toUpperCase() } };
   return null;

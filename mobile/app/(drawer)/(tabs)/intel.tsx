@@ -1,10 +1,11 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
-import { BarChart3, Bug, Calendar, Crosshair, Fish, Lock, Shield } from 'lucide-react-native';
-import { Screen } from '../../src/components/Screen';
-import { AdSlot } from '../../src/components/ui';
-import { colors } from '../../src/theme/colors';
-import { radius, spacing } from '../../src/theme/spacing';
+import { BarChart3, Bug, Calendar, Crosshair, Fish, Gamepad2, Lock, Shield } from 'lucide-react-native';
+import { Screen } from '../../../src/components/Screen';
+import { ScreenTitle } from '../../../src/components/ScreenTitle';
+import { AdSlot } from '../../../src/components/ui';
+import { colors } from '../../../src/theme/colors';
+import { radius, spacing } from '../../../src/theme/spacing';
 
 const SECTIONS: { href: Href; title: string; subtitle: string; Icon: typeof Shield; color: string }[] = [
   { href: '/apt', title: 'APT Tracker', subtitle: 'MITRE ATT&CK groups, TTPs, targets', Icon: Crosshair, color: colors.critical },
@@ -14,13 +15,14 @@ const SECTIONS: { href: Href; title: string; subtitle: string; Icon: typeof Shie
   { href: '/phishing', title: 'Phishing Feed', subtitle: 'Live OpenPhish / PhishTank URLs', Icon: Fish, color: colors.low },
   { href: '/calendar', title: 'Vuln Calendar', subtitle: 'Patch Tuesday, Adobe, Oracle CPU', Icon: Calendar, color: colors.success },
   { href: '/analytics', title: 'Analytics', subtitle: 'CVSS distribution, attack vectors, countries', Icon: BarChart3, color: colors.subtle },
+  { href: '/phish-game', title: 'Phish or Not?', subtitle: 'Swipe game: spot the phishing message', Icon: Gamepad2, color: colors.accent },
 ];
 
 export default function IntelScreen() {
   const router = useRouter();
   return (
     <Screen scroll edges={['top', 'left', 'right']}>
-      <Text style={s.h1}>Threat Intel</Text>
+      <ScreenTitle title="Threat Intel" />
       <View style={s.grid}>
         {SECTIONS.map(({ href, title, subtitle, Icon, color }) => (
           <Pressable key={title} onPress={() => router.push(href)} style={({ pressed }) => [s.tile, pressed && s.tilePressed]}>

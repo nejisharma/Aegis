@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ErrorState } from '../../src/components/ErrorState';
-import { Screen } from '../../src/components/Screen';
-import { SearchBar } from '../../src/components/SearchBar';
-import { Segmented } from '../../src/components/Segmented';
-import { CVSSBadge, Card, EmptyState, KeyValue, ListRow, Loading, Pill, SectionHeader } from '../../src/components/ui';
-import { useAbuseIpdb, useCveSearch, useDebounced, useExploits, useGeoIp, useIocLookup, useShodan } from '../../src/hooks/useApi';
-import { summarizeCve, severityColor } from '../../src/lib/cvss';
-import { detectIocType } from '../../src/lib/ioc';
-import { flagEmoji, shortDate, truncate } from '../../src/lib/format';
-import { openUrl } from '../../src/lib/browser';
-import { colors } from '../../src/theme/colors';
-import { spacing } from '../../src/theme/spacing';
+import { ErrorState } from '../../../src/components/ErrorState';
+import { Screen } from '../../../src/components/Screen';
+import { ScreenTitle } from '../../../src/components/ScreenTitle';
+import { SearchBar } from '../../../src/components/SearchBar';
+import { Segmented } from '../../../src/components/Segmented';
+import { CVSSBadge, Card, EmptyState, KeyValue, ListRow, Loading, Pill, SectionHeader } from '../../../src/components/ui';
+import { useAbuseIpdb, useCveSearch, useDebounced, useExploits, useGeoIp, useIocLookup, useShodan } from '../../../src/hooks/useApi';
+import { summarizeCve, severityColor } from '../../../src/lib/cvss';
+import { detectIocType } from '../../../src/lib/ioc';
+import { flagEmoji, shortDate, truncate } from '../../../src/lib/format';
+import { openUrl } from '../../../src/lib/browser';
+import { colors } from '../../../src/theme/colors';
+import { spacing } from '../../../src/theme/spacing';
 
 type Mode = 'cve' | 'ioc' | 'ip' | 'exploits';
 
@@ -32,7 +33,7 @@ export default function SearchScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right']}>
-      <Text style={s.h1}>Search</Text>
+      <ScreenTitle title="Search" />
       <Segmented
         value={mode}
         onChange={(m) => {
