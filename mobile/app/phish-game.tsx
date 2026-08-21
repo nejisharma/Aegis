@@ -108,13 +108,13 @@ export default function PhishGameScreen() {
           </View>
           {phase === 'playing' ? (
             <View style={s.buttons}>
-              <Pressable onPress={() => answer(false)} style={[s.btn, s.btnLegit]}>
-                <ShieldCheck size={18} color={colors.success} />
-                <Text style={[s.btnText, { color: colors.success }]}>Legit</Text>
-              </Pressable>
               <Pressable onPress={() => answer(true)} style={[s.btn, s.btnPhish]}>
                 <ShieldAlert size={18} color={colors.critical} />
-                <Text style={[s.btnText, { color: colors.critical }]}>Phish</Text>
+                <Text style={[s.btnText, { color: colors.critical }]}>← Phish</Text>
+              </Pressable>
+              <Pressable onPress={() => answer(false)} style={[s.btn, s.btnLegit]}>
+                <ShieldCheck size={18} color={colors.success} />
+                <Text style={[s.btnText, { color: colors.success }]}>Legit →</Text>
               </Pressable>
             </View>
           ) : (
