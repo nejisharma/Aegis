@@ -1,5 +1,14 @@
+/** Parses ISO strings plus the `YYYY-MM-DD HH:MM:SS` (UTC) form used by abuse.ch and ransomware.live. */
+export function parseDate(input: string | number | Date): Date {
+  if (input instanceof Date) return input;
+  if (typeof input === 'number') return new Date(input);
+  const m = input.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})(?:\.\d+)?$/);
+  if (m) return new Date(`${m[1]}T${m[2]}Z`);
+  return new Date(input);
+}
+
 export function timeAgo(input: string | number | Date): string {
-  const t = typeof input === 'number' ? input : new Date(input).getTime();
+  const t = parseDate(input).getTime();
   if (Number.isNaN(t)) return '';
   const diff = Math.max(0, Date.now() - t);
   const s = Math.floor(diff / 1000);
@@ -16,7 +25,7 @@ export function timeAgo(input: string | number | Date): string {
 }
 
 export function shortDate(input: string | Date): string {
-  const d = typeof input === 'string' ? new Date(input) : input;
+  const d = parseDate(input);
   if (Number.isNaN(d.getTime())) return '';
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }

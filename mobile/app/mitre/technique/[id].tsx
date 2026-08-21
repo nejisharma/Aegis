@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ExternalLink } from 'lucide-react-native';
+import { ErrorState } from '../../../src/components/ErrorState';
 import { Screen } from '../../../src/components/Screen';
 import { Card, EmptyState, KeyValue, ListRow, Loading, OfflineBanner, Pill, SectionHeader, SeverityDot } from '../../../src/components/ui';
 import { useMitre } from '../../../src/hooks/useApi';
@@ -23,7 +24,7 @@ export default function TechniqueDetailScreen() {
       {isLoading && !data ? (
         <Loading />
       ) : !technique || !data ? (
-        <EmptyState title="Technique not found" message={error?.message ?? `No ATT&CK technique with id ${id}`} onRetry={() => mutate()} />
+        error ? <ErrorState error={error} onRetry={() => mutate()} /> : <EmptyState title="Technique not found" message={`No ATT&CK technique with id ${id}`} />
       ) : (
         <TechniqueBody technique={technique} data={data} />
       )}

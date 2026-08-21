@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
+import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
 import { EmptyState, ListRow, OfflineBanner, Skeleton, StatCard } from '../../src/components/ui';
 import { useMitre } from '../../src/hooks/useApi';
@@ -27,7 +28,7 @@ export default function MitreTacticsScreen() {
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (
-        <EmptyState title="Could not load ATT&CK data" message={error.message} onRetry={() => mutate()} />
+        <ErrorState error={error} onRetry={() => mutate()} />
       ) : (
         <FlatList
           data={rows}

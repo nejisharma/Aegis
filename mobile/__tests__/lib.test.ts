@@ -91,6 +91,7 @@ describe('format', () => {
   it('timeAgo', () => {
     expect(timeAgo(Date.now() - 5 * 60 * 1000)).toBe('5m ago');
     expect(timeAgo('garbage')).toBe('');
+    expect(timeAgo('2020-01-01 00:00:00')).toMatch(/y ago$/);
   });
   it('bytes and truncate and flags', () => {
     expect(formatBytes(2048)).toBe('2.0 KB');

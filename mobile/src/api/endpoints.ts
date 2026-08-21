@@ -37,6 +37,13 @@ export const searchCves = (keyword: string, limit = 20, startIndex = 0) =>
 /** The web route only supports keyword search; using the CVE id as the keyword returns that CVE. */
 export const getCveById = (id: string) => searchCves(id, 1, 0);
 
+/** CVEs published in the last `days` days (optionally filtered by CVSS v3 severity), newest-first. */
+export const getRecentCves = (days = 7, severity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL', limit = 50) =>
+  api<NVDResponse>(`/api/cve${q({ days, severity, limit })}`).then((r) => ({
+    ...r,
+    vulnerabilities: [...(r.vulnerabilities ?? [])].sort((a, b) => b.cve.published.localeCompare(a.cve.published)),
+  }));
+
 // IP intel — GET ?ip=
 export const getGeoIp = (ip: string) => api<GeoIPResult>(`/api/geoip${q({ ip })}`);
 export const getShodan = (ip: string) => api<ShodanInternetDB>(`/api/shodan${q({ ip })}`);

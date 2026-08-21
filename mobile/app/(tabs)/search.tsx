@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
 import { SearchBar } from '../../src/components/SearchBar';
 import { Segmented } from '../../src/components/Segmented';
@@ -65,7 +66,7 @@ function CveResults({ keyword }: { keyword: string }) {
   const { data, error, isLoading, mutate } = useCveSearch(keyword, 25);
   if (!keyword.trim()) return <Hint text="Searches the NVD database. Results include CVSS v3.1 scores." />;
   if (isLoading && !data) return <Loading label="Searching NVD…" />;
-  if (error && !data) return <EmptyState title="Search failed" message={error.message} onRetry={() => mutate()} />;
+  if (error && !data) return <ErrorState error={error} onRetry={() => mutate()} />;
   const items = (data?.vulnerabilities ?? []).map(summarizeCve);
   if (!items.length) return <EmptyState title="No results" message={`Nothing matched “${keyword}”.`} />;
   return (
@@ -90,7 +91,7 @@ function IocResults({ query }: { query: string }) {
   if (!query.trim()) return <Hint text="Checks ThreatFox, URLhaus, AbuseIPDB (IPs), MalwareBazaar and VirusTotal (hashes)." />;
   if (type === 'unknown') return <Hint text="Enter an IP address, domain, URL, or MD5/SHA1/SHA256 hash." />;
   if (isLoading && !data) return <Loading label={`Looking up ${type}…`} />;
-  if (error && !data) return <EmptyState title="Lookup failed" message={error.message} onRetry={() => mutate()} />;
+  if (error && !data) return <ErrorState error={error} onRetry={() => mutate()} />;
   if (!data) return null;
 
   const tf = Array.isArray(data.threatfox?.data) ? data.threatfox.data : [];
@@ -192,7 +193,7 @@ function IpResults({ ip }: { ip: string }) {
           <KeyValue label="Coordinates" value={`${g.lat.toFixed(3)}, ${g.lon.toFixed(3)}`} mono />
         </Card>
       ) : (
-        <EmptyState title="GeoIP unavailable" message={geo.error?.message ?? 'Private or reserved address'} onRetry={() => geo.mutate()} />
+        <ErrorState error={geo.error} onRetry={() => geo.mutate()} />
       )}
 
       <Card>
@@ -236,7 +237,7 @@ function ExploitResults({ keyword }: { keyword: string }) {
   const { data, error, isLoading, mutate } = useExploits(keyword);
   if (!keyword.trim()) return <Hint text="Searches the GitHub Advisory Database for public exploits and advisories." />;
   if (isLoading && !data) return <Loading label="Searching advisories…" />;
-  if (error && !data) return <EmptyState title="Search failed" message={error.message} onRetry={() => mutate()} />;
+  if (error && !data) return <ErrorState error={error} onRetry={() => mutate()} />;
   const items = data?.advisories ?? [];
   if (!items.length) return <EmptyState title="No advisories" message={`Nothing matched “${keyword}”.`} />;
   return (

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
 import { EmptyState, ListRow, OfflineBanner, SeverityDot, Skeleton } from '../../src/components/ui';
 import { useMitre } from '../../src/hooks/useApi';
@@ -30,7 +31,7 @@ export default function MitreTacticScreen() {
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (
-        <EmptyState title="Could not load ATT&CK data" message={error.message} onRetry={() => mutate()} />
+        <ErrorState error={error} onRetry={() => mutate()} />
       ) : !tactic ? (
         <EmptyState title="Tactic not found" message={`No tactic with id ${tacticId}`} onRetry={() => mutate()} />
       ) : (

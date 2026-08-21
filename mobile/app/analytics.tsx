@@ -2,9 +2,10 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { RefreshCw } from 'lucide-react-native';
+import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
 import { Card, EmptyState, OfflineBanner, Skeleton } from '../src/components/ui';
-import { useCveSearch, useMitre } from '../src/hooks/useApi';
+import { useMitre, useRecentCves } from '../src/hooks/useApi';
 import { attackVectorDistribution, severityDistribution, topCountries, topTechniquesByUsage, type Bucket } from '../src/lib/analytics';
 import { generateBatch } from '../src/lib/threat-simulator';
 import { severityColor } from '../src/lib/cvss';
@@ -13,8 +14,6 @@ import { colors } from '../src/theme/colors';
 import { radius, spacing } from '../src/theme/spacing';
 
 /** Broad NVD keyword so the sample spans all severities (the home tab's "critical" query is too narrow). */
-const CVE_SAMPLE_KEYWORD = 'remote code execution';
-const CVE_SAMPLE_SIZE = 100;
 /** Roughly what the web map accumulates in its 60-second window. */
 const SIM_EVENTS = 120;
 
@@ -26,7 +25,7 @@ const VECTOR_COLORS: Record<string, string> = {
 };
 
 export default function AnalyticsScreen() {
-  const cves = useCveSearch(CVE_SAMPLE_KEYWORD, CVE_SAMPLE_SIZE);
+  const cves = useRecentCves();
   const mitre = useMitre();
   // Mirrors the web: counts derived from the simulated threat stream; the refresh button re-rolls the sample.
   const [events, setEvents] = useState(() => generateBatch(SIM_EVENTS));
@@ -48,7 +47,7 @@ export default function AnalyticsScreen() {
           {cves.isLoading && !cves.data ? (
             <Skeleton lines={4} />
           ) : cves.error && !cves.data ? (
-            <EmptyState title="NVD unavailable" message={cves.error.message} onRetry={() => cves.mutate()} />
+            <ErrorState error={cves.error} onRetry={() => cves.mutate()} />
           ) : (
             <Bars buckets={severity} colorFor={(b) => severityColor(b.label)} />
           )}
@@ -64,7 +63,7 @@ export default function AnalyticsScreen() {
           {mitre.isLoading && !mitre.data ? (
             <Skeleton lines={6} />
           ) : mitre.error && !mitre.data ? (
-            <EmptyState title="ATT&CK unavailable" message={mitre.error.message} onRetry={() => mitre.mutate()} />
+            <ErrorState error={mitre.error} onRetry={() => mitre.mutate()} />
           ) : (
             <View style={{ gap: spacing.sm }}>
               {techniques.map((t, i) => (

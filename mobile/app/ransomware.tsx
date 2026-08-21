@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
+import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
 import { Card, EmptyState, KeyValue, OfflineBanner, Pill, SectionHeader, Skeleton, StatCard } from '../src/components/ui';
 import { useRansomware } from '../src/hooks/useApi';
@@ -33,7 +34,7 @@ export default function RansomwareScreen() {
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (
-        <EmptyState title="Could not load ransomware data" message={error.message} onRetry={() => mutate()} />
+        <ErrorState error={error} onRetry={() => mutate()} />
       ) : !data ? null : data.type === 'victims' ? (
         <VictimsList victims={data.data} />
       ) : (

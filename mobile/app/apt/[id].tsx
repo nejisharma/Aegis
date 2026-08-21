@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ExternalLink } from 'lucide-react-native';
+import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
 import { Card, EmptyState, KeyValue, ListRow, Loading, OfflineBanner, Pill, SectionHeader, StatCard } from '../../src/components/ui';
 import { useMitre } from '../../src/hooks/useApi';
@@ -24,7 +25,7 @@ export default function AptDetailScreen() {
       {isLoading && !data ? (
         <Loading />
       ) : !group || !data ? (
-        <EmptyState title="Group not found" message={error?.message ?? `No ATT&CK group with id ${id}`} onRetry={() => mutate()} />
+        error ? <ErrorState error={error} onRetry={() => mutate()} /> : <EmptyState title="Group not found" message={`No ATT&CK group with id ${id}`} />
       ) : (
         <GroupBody group={group} data={data} />
       )}

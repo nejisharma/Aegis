@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
+import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
 import { SearchBar } from '../../src/components/SearchBar';
 import { EmptyState, ListRow, OfflineBanner, Skeleton } from '../../src/components/ui';
@@ -27,7 +28,7 @@ export default function AptTrackerScreen() {
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (
-        <EmptyState title="Could not load ATT&CK data" message={error.message} onRetry={() => mutate()} />
+        <ErrorState error={error} onRetry={() => mutate()} />
       ) : (
         <FlatList
           data={groups}

@@ -1,6 +1,7 @@
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { ExternalLink } from 'lucide-react-native';
+import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
 import { CVSSBadge, Card, EmptyState, KeyValue, Loading, OfflineBanner, Pill, SectionHeader } from '../../src/components/ui';
 import { useCve } from '../../src/hooks/useApi';
@@ -22,7 +23,7 @@ export default function CveDetailScreen() {
       {isLoading && !item ? (
         <Loading />
       ) : !item ? (
-        <EmptyState title="CVE not found" message={error?.message ?? `NVD has no record for ${cveId}`} onRetry={() => mutate()} />
+        error ? <ErrorState error={error} onRetry={() => mutate()} /> : <EmptyState title="CVE not found" message={`NVD has no record for ${cveId}`} />
       ) : (
         <CveBody item={item} />
       )}

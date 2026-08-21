@@ -23,9 +23,13 @@ export const useCveSearch = (keyword: string, limit = 20) =>
 
 export const useCve = (id: string) => useQuery(id ? `cve:id:${id}` : null, () => ep.getCveById(id), { revalidateOnFocus: false });
 
-/** Latest critical CVEs for the Home tab (NVD keyword search for recent criticals via the proxied endpoint). */
+/** Critical CVEs published in the last 14 days, for the Home tab. */
 export const useRecentCriticalCves = () =>
-  useQuery('cve:recent-critical', () => ep.searchCves('critical', 20), { refreshInterval: 30 * 60_000 });
+  useQuery('cve:recent-critical:14d', () => ep.getRecentCves(14, 'CRITICAL', 20), { refreshInterval: 30 * 60_000 });
+
+/** A recent sample (last 30 days, up to 100) for the Analytics distributions. */
+export const useRecentCves = () =>
+  useQuery('cve:recent:30d', () => ep.getRecentCves(30, undefined, 100), { refreshInterval: 60 * 60_000 });
 
 export const useGeoIp = (ip: string) => useQuery(ip ? `geoip:${ip}` : null, () => ep.getGeoIp(ip), { revalidateOnFocus: false });
 export const useShodan = (ip: string) => useQuery(ip ? `shodan:${ip}` : null, () => ep.getShodan(ip), { revalidateOnFocus: false });

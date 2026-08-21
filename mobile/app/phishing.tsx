@@ -1,6 +1,7 @@
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { AlertTriangle } from 'lucide-react-native';
+import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
 import { EmptyState, ListRow, OfflineBanner, Pill, Skeleton, StatCard } from '../src/components/ui';
 import { usePhishing } from '../src/hooks/useApi';
@@ -23,7 +24,7 @@ export default function PhishingScreen() {
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (
-        <EmptyState title="Could not load phishing feed" message={error.message} onRetry={() => mutate()} />
+        <ErrorState error={error} onRetry={() => mutate()} />
       ) : (
         <FlatList
           data={entries}

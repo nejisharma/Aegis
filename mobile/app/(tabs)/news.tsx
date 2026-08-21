@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { openUrl } from '../../src/lib/browser';
+import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
 import { Chip, EmptyState, OfflineBanner, Skeleton } from '../../src/components/ui';
 import { useNews } from '../../src/hooks/useApi';
@@ -32,7 +33,7 @@ export default function NewsScreen() {
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (
-        <EmptyState title="Could not load news" message={error.message} onRetry={() => mutate()} />
+        <ErrorState error={error} onRetry={() => mutate()} />
       ) : (
         <FlatList
           data={items}
