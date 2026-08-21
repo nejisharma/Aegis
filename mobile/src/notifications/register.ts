@@ -58,8 +58,22 @@ export async function registerForPush(prefs?: PushPrefs): Promise<{ status: Regi
     await savePrefs(effectivePrefs);
     return { status: 'registered', token };
   } catch (err) {
-    return { status: 'error', message: err instanceof Error ? err.message : 'Registration failed' };
+    return { status: 'error', message: friendlyError(err) };
   }
+}
+
+function friendlyError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  if (/Firebase|googleServicesFile|FCM/i.test(raw)) {
+    return 'Push notifications are not available in this build yet. Please update the app or try again later.';
+  }
+  if (/projectId|Expo push token|experienceId/i.test(raw)) {
+    return 'Push notifications are not configured for this build yet.';
+  }
+  if (/Network|timed out|fetch/i.test(raw)) {
+    return 'Could not reach the Aegis server to register this device. Check your connection and try again.';
+  }
+  return 'Could not enable notifications right now. Please try again later.';
 }
 
 /** Persist a pref change locally and on the server (re-registers if the token is unknown to the server). */
