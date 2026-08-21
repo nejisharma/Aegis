@@ -1,4 +1,4 @@
-import { api, postJson, patchJson, deleteJson } from './client';
+import { api, ApiError, postJson, patchJson, deleteJson } from './client';
 import type {
   AbuseIpdbResult,
   ExploitsResponse,
@@ -38,11 +38,32 @@ export const searchCves = (keyword: string, limit = 20, startIndex = 0) =>
 export const getCveById = (id: string) => searchCves(id, 1, 0);
 
 /** CVEs published in the last `days` days (optionally filtered by CVSS v3 severity), newest-first. */
-export const getRecentCves = (days = 7, severity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL', limit = 50) =>
-  api<NVDResponse>(`/api/cve${q({ days, severity, limit })}`).then((r) => ({
-    ...r,
-    vulnerabilities: [...(r.vulnerabilities ?? [])].sort((a, b) => b.cve.published.localeCompare(a.cve.published)),
-  }));
+export const getRecentCves = async (days = 7, severity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL', limit = 50): Promise<NVDResponse> => {
+  try {
+    const r = await api<NVDResponse>(`/api/cve${q({ days, severity, limit })}`);
+    return { ...r, vulnerabilities: newestFirst(r.vulnerabilities) };
+  } catch (err) {
+    // Servers without the `days` parameter answer 400; fall back to the tail of this year's CVE list.
+    if (err instanceof ApiError && err.status === 400) return recentCvesByYear(severity, limit);
+    throw err;
+  }
+};
+
+const newestFirst = (v: NVDResponse['vulnerabilities'] | undefined) =>
+  [...(v ?? [])].sort((a, b) => b.cve.published.localeCompare(a.cve.published));
+
+/** NVD keyword results come oldest-first, so read the total and page to the end. */
+async function recentCvesByYear(severity: string | undefined, limit: number): Promise<NVDResponse> {
+  const year = new Date().getFullYear();
+  const keyword = `CVE-${year}`;
+  const probe = await api<NVDResponse>(`/api/cve${q({ keyword, limit: 1 })}`);
+  const pageSize = severity ? 100 : limit;
+  const startIndex = Math.max(0, probe.totalResults - pageSize);
+  const page = await api<NVDResponse>(`/api/cve${q({ keyword, limit: pageSize, startIndex })}`);
+  let items = newestFirst(page.vulnerabilities);
+  if (severity) items = items.filter((v) => v.cve.metrics?.cvssMetricV31?.[0]?.cvssData.baseSeverity === severity);
+  return { ...page, vulnerabilities: items.slice(0, limit) };
+}
 
 // IP intel — GET ?ip=
 export const getGeoIp = (ip: string) => api<GeoIPResult>(`/api/geoip${q({ ip })}`);

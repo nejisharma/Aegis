@@ -34,10 +34,17 @@ export async function GET(request: NextRequest) {
       headers: { 'User-Agent': 'AEGIS-Dashboard/1.0' },
     });
 
+    if (upstream.status === 404) {
+      // NVD answers 404 for queries it cannot match (e.g. very short keywords); treat as "no results".
+      return NextResponse.json(
+        { resultsPerPage: limit, startIndex, totalResults: 0, vulnerabilities: [] },
+        { headers: { 'Cache-Control': 'public, s-maxage=300' } }
+      );
+    }
     if (!upstream.ok) {
       return NextResponse.json(
         { error: `NVD API returned ${upstream.status}` },
-        { status: upstream.status }
+        { status: 502 }
       );
     }
 

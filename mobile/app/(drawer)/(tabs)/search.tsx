@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ErrorState } from '../../../src/components/ErrorState';
 import { Screen } from '../../../src/components/Screen';
@@ -28,8 +28,10 @@ export default function SearchScreen() {
   const [mode, setMode] = useState<Mode>('cve');
   const [query, setQuery] = useState('');
   const [submitted, setSubmitted] = useState('');
-  const debounced = useDebounced(query, 700);
-  const effective = submitted || debounced;
+  const debounced = useDebounced(query, 600);
+  // CVE / Exploits search as you type (like the website); IOC / IP only on Enter or the Look up button.
+  const explicit = mode === 'ioc' || mode === 'ip';
+  const effective = explicit ? submitted : submitted || debounced;
 
   return (
     <Screen edges={['top', 'left', 'right']}>
@@ -47,7 +49,12 @@ export default function SearchScreen() {
           { value: 'exploits', label: 'Exploits' },
         ]}
       />
-      <SearchBar value={query} onChangeText={(t) => { setQuery(t); setSubmitted(''); }} onSubmit={() => setSubmitted(query)} placeholder={PLACEHOLDER[mode]} />
+      <SearchBar value={query} onChangeText={(t) => { setQuery(t); setSubmitted(''); }} onSubmit={() => setSubmitted(query.trim())} placeholder={PLACEHOLDER[mode]} />
+      {explicit && query.trim() && !submitted ? (
+        <Pressable onPress={() => setSubmitted(query.trim())} style={s.lookupBtn}>
+          <Text style={s.lookupText}>Look up</Text>
+        </Pressable>
+      ) : null}
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: spacing.xl }}>
         {mode === 'cve' && <CveResults keyword={effective} />}
         {mode === 'ioc' && <IocResults query={effective} />}
@@ -58,14 +65,20 @@ export default function SearchScreen() {
   );
 }
 
+function moreChars(q: string) {
+  const n = 3 - q.trim().length;
+  return `Type ${n} more character${n > 1 ? 's' : ''} to search…`;
+}
+
 function Hint({ text }: { text: string }) {
   return <Text style={s.hint}>{text}</Text>;
 }
 
 function CveResults({ keyword }: { keyword: string }) {
   const router = useRouter();
-  const { data, error, isLoading, mutate } = useCveSearch(keyword, 25);
+  const { data, error, isLoading, mutate } = useCveSearch(keyword.trim().length >= 3 ? keyword : '', 25);
   if (!keyword.trim()) return <Hint text="Searches the NVD database. Results include CVSS v3.1 scores." />;
+  if (keyword.trim().length < 3) return <Hint text={moreChars(keyword)} />;
   if (isLoading && !data) return <Loading label="Searching NVD…" />;
   if (error && !data) return <ErrorState error={error} onRetry={() => mutate()} />;
   const items = (data?.vulnerabilities ?? []).map(summarizeCve);
@@ -89,7 +102,7 @@ function CveResults({ keyword }: { keyword: string }) {
 function IocResults({ query }: { query: string }) {
   const type = detectIocType(query);
   const { data, error, isLoading, mutate } = useIocLookup(query);
-  if (!query.trim()) return <Hint text="Checks ThreatFox, URLhaus, AbuseIPDB (IPs), MalwareBazaar and VirusTotal (hashes)." />;
+  if (!query.trim()) return <Hint text="Checks ThreatFox, URLhaus, AbuseIPDB (IPs), MalwareBazaar and VirusTotal (hashes). Press search or Look up to run." />;
   if (type === 'unknown') return <Hint text="Enter an IP address, domain, URL, or MD5/SHA1/SHA256 hash." />;
   if (isLoading && !data) return <Loading label={`Looking up ${type}…`} />;
   if (error && !data) return <ErrorState error={error} onRetry={() => mutate()} />;
@@ -175,7 +188,7 @@ function IpResults({ ip }: { ip: string }) {
   const geo = useGeoIp(valid ? ip : '');
   const shodan = useShodan(valid ? ip : '');
   const abuse = useAbuseIpdb(valid ? ip : '');
-  if (!ip.trim()) return <Hint text="GeoIP (ip-api.com) + Shodan InternetDB open ports and known vulns." />;
+  if (!ip.trim()) return <Hint text="GeoIP (ip-api.com) + Shodan InternetDB open ports and known vulns. Press search or Look up to run." />;
   if (!valid) return <Hint text="Enter a valid IPv4 or IPv6 address." />;
   if (geo.isLoading && !geo.data) return <Loading label="Resolving…" />;
   const g = geo.data;
@@ -235,8 +248,9 @@ function IpResults({ ip }: { ip: string }) {
 }
 
 function ExploitResults({ keyword }: { keyword: string }) {
-  const { data, error, isLoading, mutate } = useExploits(keyword);
+  const { data, error, isLoading, mutate } = useExploits(keyword.trim().length >= 3 ? keyword : '');
   if (!keyword.trim()) return <Hint text="Searches the GitHub Advisory Database for public exploits and advisories." />;
+  if (keyword.trim().length < 3) return <Hint text={moreChars(keyword)} />;
   if (isLoading && !data) return <Loading label="Searching advisories…" />;
   if (error && !data) return <ErrorState error={error} onRetry={() => mutate()} />;
   const items = data?.advisories ?? [];
@@ -263,6 +277,8 @@ function ExploitResults({ keyword }: { keyword: string }) {
 const s = StyleSheet.create({
   h1: { color: colors.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm },
   hint: { color: colors.muted, fontSize: 13, textAlign: 'center', padding: spacing.xl, lineHeight: 19 },
+  lookupBtn: { alignSelf: 'flex-end', marginRight: spacing.lg, backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
+  lookupText: { color: colors.bg, fontWeight: '800', fontSize: 13 },
   verdict: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   verdictText: { fontSize: 14, fontWeight: '700' },
   cardTitle: { color: colors.text, fontSize: 14, fontWeight: '700', marginBottom: 6 },

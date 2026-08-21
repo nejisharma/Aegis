@@ -20,8 +20,8 @@ const COPY: Record<FailureKind, { title: string; message: string }> = {
     message: 'Aegis is up, but the upstream data provider for this panel did not answer. Try again shortly.',
   },
   unknown: {
-    title: 'Something went wrong',
-    message: 'Could not load this data.',
+    title: 'Nothing came back',
+    message: 'The data source could not answer this request. Try a different query or try again.',
   },
 };
 
