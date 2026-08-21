@@ -1,0 +1,125 @@
+import { NextRequest, NextResponse } from 'next/server';
+import type { ExpoPushMessage } from 'expo-server-sdk';
+import { API_URLS } from '@/lib/constants';
+import type { NVDResponse } from '@/types/cve';
+import type { NewsItem } from '@/types/news';
+import { addSeen, getDevices, getRedis, getSeen, KEYS, removeDevices } from '@/lib/push/redis';
+import { buildDigest, cveSummary, pickNewCriticalCves } from '@/lib/push/detectors';
+import { sendPush } from '@/lib/push/expo-push';
+import type { PushCategory } from '@/lib/push/types';
+
+export const maxDuration = 60;
+
+function isAuthorized(request: NextRequest): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return process.env.NODE_ENV !== 'production';
+  return request.headers.get('authorization') === `Bearer ${secret}`;
+}
+
+async function fetchRecentCriticalCves(): Promise<NVDResponse['vulnerabilities']> {
+  const end = new Date();
+  const start = new Date(end.getTime() - 2 * 60 * 60 * 1000);
+  const url =
+    `${API_URLS.NVD_CVE}?cvssV3Severity=CRITICAL` +
+    `&pubStartDate=${encodeURIComponent(start.toISOString())}` +
+    `&pubEndDate=${encodeURIComponent(end.toISOString())}&resultsPerPage=50`;
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'AEGIS-Dashboard/1.0' },
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) throw new Error(`NVD ${res.status}`);
+  const data = (await res.json()) as NVDResponse;
+  return data.vulnerabilities ?? [];
+}
+
+async function fetchNews(origin: string): Promise<NewsItem[]> {
+  const res = await fetch(`${origin}/api/news`, { signal: AbortSignal.timeout(20000) });
+  if (!res.ok) throw new Error(`news ${res.status}`);
+  const data = (await res.json()) as { items: NewsItem[] };
+  return data.items ?? [];
+}
+
+export async function GET(request: NextRequest) {
+  if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const redis = getRedis();
+  if (!redis) return NextResponse.json({ skipped: 'no redis' });
+
+  const devices = await getDevices(redis);
+  const tokensFor = (cat: PushCategory) =>
+    Object.entries(devices)
+      .filter(([, d]) => d.prefs[cat])
+      .map(([t]) => t);
+
+  const result = { cve: 0, digest: false, pruned: 0, errors: [] as string[] };
+  const invalid = new Set<string>();
+
+  // (a) Critical CVEs: one push per CVE, immediately.
+  try {
+    const cveTokens = tokensFor('critical_cve');
+    const vulns = await fetchRecentCriticalCves();
+    const seen = await getSeen(redis, KEYS.seenCve);
+    const fresh = pickNewCriticalCves(vulns, seen);
+    if (fresh.length) {
+      if (cveTokens.length) {
+        const messages: ExpoPushMessage[] = fresh.flatMap((v) =>
+          cveTokens.map((to) => ({
+            to,
+            sound: 'default' as const,
+            title: `Critical CVE: ${v.cve.id}`,
+            body: cveSummary(v),
+            data: { url: `aegis://cve/${v.cve.id}` },
+            channelId: 'critical',
+          })),
+        );
+        const r = await sendPush(messages);
+        r.invalidTokens.forEach((t) => invalid.add(t));
+      }
+      await addSeen(redis, KEYS.seenCve, fresh.map((v) => v.cve.id));
+      result.cve = fresh.length;
+    }
+  } catch (err) {
+    result.errors.push(`cve: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  // (b) News digest: batched, at most every 3 h.
+  try {
+    const newsTokens = tokensFor('news_digest');
+    const items = await fetchNews(request.nextUrl.origin);
+    const seen = await getSeen(redis, KEYS.seenNews);
+    const lastDigest = await redis.get<string>(KEYS.lastDigest);
+
+    if (seen.size === 0 && items.length) {
+      // First run ever: seed the seen-set silently so nobody gets "40 new stories".
+      await addSeen(redis, KEYS.seenNews, items.map((i) => i.id));
+      await redis.set(KEYS.lastDigest, new Date().toISOString());
+    } else {
+      const digest = buildDigest(items, seen, lastDigest ?? null, new Date());
+      if (digest) {
+        if (newsTokens.length) {
+          const r = await sendPush(
+            newsTokens.map((to) => ({
+              to,
+              title: digest.count === 1 ? '1 new security story' : `${digest.count} new security stories`,
+              body: digest.newest.title,
+              data: { url: 'aegis://news' },
+              channelId: 'news',
+            })),
+          );
+          r.invalidTokens.forEach((t) => invalid.add(t));
+        }
+        await addSeen(redis, KEYS.seenNews, digest.newIds);
+        await redis.set(KEYS.lastDigest, new Date().toISOString());
+        result.digest = true;
+      }
+    }
+  } catch (err) {
+    result.errors.push(`news: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  if (invalid.size) {
+    await removeDevices(redis, [...invalid]);
+    result.pruned = invalid.size;
+  }
+  return NextResponse.json(result);
+}

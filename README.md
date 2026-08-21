@@ -21,6 +21,7 @@ https://aegis.neeraj.ca
 - **Threat Intel** — AbuseIPDB, URLScan.io, phishing feed integration
 - **Vulnerability Calendar** — Patch Tuesday tracker for Microsoft, Adobe, Oracle
 - **Analytics** — CVSS distribution, attack vectors, vulnerability trends (live from NVD)
+- **Mobile app** — iOS/Android companion in `mobile/` (Expo) with push notifications for critical CVEs and a news digest
 
 ## Tech Stack
 
@@ -38,7 +39,7 @@ https://aegis.neeraj.ca
 | NVD CVE API | None | CVE/vulnerability search |
 | Shodan InternetDB | None | Open ports & vulns per IP |
 | ip-api.com | None | IP geolocation |
-| Mappls (MapmyIndia) | Free key | India-compliant map tiles |
+| CartoDB dark tiles | None | Map tiles (India boundary drawn from Survey of India GeoJSON overlay) |
 | ThreatFox (abuse.ch) | Free key | IOC feed |
 | URLhaus (abuse.ch) | Free key | Malicious URL database |
 | MalwareBazaar (abuse.ch) | Free key | Malware samples |
@@ -73,10 +74,21 @@ Create a `.env.local` file for APIs that require keys:
 ```env
 ABUSECH_AUTH_KEY=your_key              # Free at https://auth.abuse.ch — used by ThreatFox, URLhaus, MalwareBazaar
 ABUSEIPDB_API_KEY=your_key             # Free at https://www.abuseipdb.com — 1,000 requests/day
-NEXT_PUBLIC_MAPPLS_API_KEY=your_key    # Free at https://apis.mappls.com/console/ — India-compliant map tiles
 ```
 
 Most features work without API keys. Panels that require them show setup instructions.
+
+### Push notifications (mobile app)
+
+The mobile app (see `mobile/`) receives push notifications from a Vercel Cron job (`/api/cron/notify`, every 30 min, see `vercel.json`). It needs:
+
+```env
+UPSTASH_REDIS_REST_URL=...   # Free at https://upstash.com — stores device tokens and last-seen IDs
+UPSTASH_REDIS_REST_TOKEN=...
+CRON_SECRET=...              # Any random string; Vercel sends it as `Authorization: Bearer` on cron calls
+```
+
+Without these the push routes respond `{skipped: "no redis"}` and the website is unaffected.
 
 ## Deployment
 
