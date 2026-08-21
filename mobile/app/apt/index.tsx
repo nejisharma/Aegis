@@ -16,14 +16,14 @@ const NO_FLAG = '\u{1F3F3}️';
 export default function AptTrackerScreen() {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const { data, error, isLoading, isOffline, mutate } = useMitre();
+  const { data, error, isLoading, isOffline, isNetworkError, mutate } = useMitre();
 
   const groups = useMemo(() => filterGroups(sortGroupsByTechniques(data?.groups ?? []), query), [data, query]);
 
   return (
     <Screen>
       <Stack.Screen options={{ title: 'APT Tracker' }} />
-      <OfflineBanner visible={isOffline} />
+      <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       <SearchBar value={query} onChangeText={setQuery} placeholder="Group, alias or country" />
       {isLoading && !data ? (
         <Skeleton lines={8} />

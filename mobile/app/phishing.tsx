@@ -10,13 +10,13 @@ import { colors } from '../src/theme/colors';
 import { spacing } from '../src/theme/spacing';
 
 export default function PhishingScreen() {
-  const { data, error, isLoading, isValidating, isOffline, mutate } = usePhishing();
+  const { data, error, isLoading, isValidating, isOffline, isNetworkError, mutate } = usePhishing();
   const entries = data?.entries ?? [];
 
   return (
     <Screen>
       <Stack.Screen options={{ title: 'Phishing Feed' }} />
-      <OfflineBanner visible={isOffline} />
+      <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       <View style={s.warn}>
         <AlertTriangle size={14} color={colors.medium} />
         <Text style={s.warnText}>Live phishing URLs — do not visit.</Text>

@@ -12,7 +12,7 @@ import { spacing } from '../../src/theme/spacing';
 
 export default function MitreTacticsScreen() {
   const router = useRouter();
-  const { data, error, isLoading, isOffline, mutate } = useMitre();
+  const { data, error, isLoading, isOffline, isNetworkError, mutate } = useMitre();
 
   const rows = useMemo(() => {
     if (!data) return [];
@@ -24,7 +24,7 @@ export default function MitreTacticsScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ title: 'MITRE ATT&CK' }} />
-      <OfflineBanner visible={isOffline} />
+      <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (

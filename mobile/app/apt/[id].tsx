@@ -15,13 +15,13 @@ import type { MITREData, MITREGroup, MITRETechnique } from '../../src/api/types'
 
 export default function AptDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data, error, isLoading, isOffline, mutate } = useMitre();
+  const { data, error, isLoading, isOffline, isNetworkError, mutate } = useMitre();
   const group = data?.groups.find((g) => g.id === id);
 
   return (
     <Screen scroll>
       <Stack.Screen options={{ title: group?.name ?? id ?? 'APT Group' }} />
-      <OfflineBanner visible={isOffline} />
+      <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {isLoading && !data ? (
         <Loading />
       ) : !group || !data ? (

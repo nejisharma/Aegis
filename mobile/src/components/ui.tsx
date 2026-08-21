@@ -125,12 +125,12 @@ export function EmptyState({ title, message, onRetry }: { title: string; message
   );
 }
 
-export function OfflineBanner({ visible }: { visible: boolean }) {
+export function OfflineBanner({ visible, networkError = true }: { visible: boolean; networkError?: boolean }) {
   if (!visible) return null;
   return (
     <View style={s.offline}>
       <WifiOff size={14} color={colors.medium} />
-      <Text style={s.offlineText}>Offline — showing cached data</Text>
+      <Text style={s.offlineText}>{networkError ? 'Offline — showing cached data' : 'Could not refresh — showing cached data'}</Text>
     </View>
   );
 }

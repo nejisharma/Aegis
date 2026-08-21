@@ -25,12 +25,12 @@ function statusColor(status: string): string {
 }
 
 export default function RansomwareScreen() {
-  const { data, error, isLoading, isValidating, isOffline, mutate } = useRansomware();
+  const { data, error, isLoading, isValidating, isOffline, isNetworkError, mutate } = useRansomware();
 
   return (
     <Screen scroll refreshControl={<RefreshControl refreshing={!!data && isValidating} onRefresh={() => mutate()} tintColor={colors.accent} />}>
       <Stack.Screen options={{ title: 'Ransomware' }} />
-      <OfflineBanner visible={isOffline} />
+      <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (

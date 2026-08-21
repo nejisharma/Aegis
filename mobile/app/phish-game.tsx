@@ -101,10 +101,10 @@ export default function PhishGameScreen() {
             <Text style={[s.hudText, { color: streak >= 3 ? colors.medium : colors.muted }]}>🔥 {streak}</Text>
           </View>
           <View style={s.deck}>
-            {round[index + 1] && phase === 'playing' ? (
-              <View style={[s.cardShadow, { transform: [{ scale: 0.95 }, { translateY: 14 }] }]} />
-            ) : null}
-            <SwipeCard key={current.id} card={current} disabled={phase !== 'playing'} onSwipe={answer} />
+            <View style={phase === 'reveal' ? s.dimmed : undefined}>
+              {round[index + 1] && phase === 'playing' ? <View style={s.cardShadow} /> : null}
+              <SwipeCard key={`${current.id}-${phase}`} card={current} disabled={phase !== 'playing'} onSwipe={answer} />
+            </View>
           </View>
           {phase === 'playing' ? (
             <View style={s.buttons}>
@@ -306,7 +306,8 @@ const s = StyleSheet.create({
   hud: { flexDirection: 'row', justifyContent: 'space-between' },
   hudText: { color: colors.subtle, fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
   deck: { flex: 1, justifyContent: 'center' },
-  cardShadow: { position: 'absolute', left: 0, right: 0, height: 360, borderRadius: radius.lg + 4, backgroundColor: colors.surfaceAlt, borderWidth: 1, borderColor: colors.border },
+  cardShadow: { position: 'absolute', left: 12, right: 12, top: 12, bottom: -10, borderRadius: radius.lg + 4, backgroundColor: colors.surfaceAlt, borderWidth: 1, borderColor: colors.border },
+  dimmed: { opacity: 0.55 },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg + 4,

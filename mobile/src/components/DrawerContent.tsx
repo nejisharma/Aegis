@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePathname, useRouter, type Href } from 'expo-router';
 import type { DrawerContentComponentProps } from 'expo-router/drawer';
@@ -16,7 +16,6 @@ import {
   Search,
   Settings,
   Shield,
-  ShieldHalf,
 } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { radius, spacing } from '../theme/spacing';
@@ -68,9 +67,7 @@ export function DrawerContent({ navigation }: DrawerContentComponentProps) {
   return (
     <View style={[s.root, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.md }]}>
       <View style={s.brand}>
-        <View style={s.brandIcon}>
-          <ShieldHalf size={22} color={colors.accent} />
-        </View>
+        <Image source={require('../../assets/splash-icon.png')} style={s.brandIcon} resizeMode="contain" />
         <View>
           <Text style={s.brandName}>AEGIS</Text>
           <Text style={s.brandSub}>Security Intelligence</Text>
@@ -100,7 +97,7 @@ export function DrawerContent({ navigation }: DrawerContentComponentProps) {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
   brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  brandIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.accentDim, alignItems: 'center', justifyContent: 'center' },
+  brandIcon: { width: 44, height: 44 },
   brandName: { color: colors.text, fontSize: 16, fontWeight: '800', letterSpacing: 2 },
   brandSub: { color: colors.muted, fontSize: 11 },
   section: { paddingTop: spacing.md },

@@ -14,7 +14,7 @@ import type { NewsItem } from '../../../src/api/types';
 
 export default function NewsScreen() {
   const [source, setSource] = useState<string | null>(null);
-  const { data, error, isLoading, isValidating, isOffline, mutate } = useNews();
+  const { data, error, isLoading, isValidating, isOffline, isNetworkError, mutate } = useNews();
 
   const items = useMemo(() => {
     const all = data?.items ?? [];
@@ -24,7 +24,7 @@ export default function NewsScreen() {
   return (
     <Screen edges={['top', 'left', 'right']}>
       <ScreenTitle title="Security News" />
-      <OfflineBanner visible={isOffline} />
+      <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips} style={{ flexGrow: 0, height: 52 }}>
         <Chip label="All" active={source === null} onPress={() => setSource(null)} />
         {NEWS_SOURCES.map((src) => (

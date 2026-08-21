@@ -14,13 +14,13 @@ import type { MITREData, MITRETechnique } from '../../../src/api/types';
 
 export default function TechniqueDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data, error, isLoading, isOffline, mutate } = useMitre();
+  const { data, error, isLoading, isOffline, isNetworkError, mutate } = useMitre();
   const technique = data?.techniques.find((t) => t.id === id);
 
   return (
     <Screen scroll>
       <Stack.Screen options={{ title: id ?? 'Technique' }} />
-      <OfflineBanner visible={isOffline} />
+      <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {isLoading && !data ? (
         <Loading />
       ) : !technique || !data ? (

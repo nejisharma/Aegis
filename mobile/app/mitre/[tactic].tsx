@@ -13,7 +13,7 @@ import { spacing } from '../../src/theme/spacing';
 export default function MitreTacticScreen() {
   const router = useRouter();
   const { tactic: tacticId } = useLocalSearchParams<{ tactic: string }>();
-  const { data, error, isLoading, isOffline, mutate } = useMitre();
+  const { data, error, isLoading, isOffline, isNetworkError, mutate } = useMitre();
   const tactic = data?.tactics.find((t) => t.id === tacticId);
 
   const rows = useMemo(() => {
@@ -27,7 +27,7 @@ export default function MitreTacticScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ title: tactic?.name ?? 'Tactic' }} />
-      <OfflineBanner visible={isOffline} />
+      <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (

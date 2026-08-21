@@ -13,13 +13,13 @@ import { spacing } from '../../src/theme/spacing';
 export default function CveDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const cveId = (id ?? '').toUpperCase();
-  const { data, error, isLoading, isOffline, mutate } = useCve(cveId);
+  const { data, error, isLoading, isOffline, isNetworkError, mutate } = useCve(cveId);
   const item = data?.vulnerabilities.find((v) => v.cve.id === cveId) ?? data?.vulnerabilities[0];
 
   return (
     <Screen scroll>
       <Stack.Screen options={{ title: cveId }} />
-      <OfflineBanner visible={isOffline} />
+      <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {isLoading && !item ? (
         <Loading />
       ) : !item ? (
