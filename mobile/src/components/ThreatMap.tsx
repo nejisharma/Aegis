@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, GeoJSONSource, Layer, Map as MapLibreMap, type CameraRef, type MapRef } from '@maplibre/maplibre-react-native';
 import { Maximize2, Minus, Plus, X } from 'lucide-react-native';
+import { EventDetailSheet } from './EventDetailSheet';
 import type { StyleSpecification } from '@maplibre/maplibre-gl-style-spec';
 import type { FeatureCollection } from 'geojson';
 import { INDIA_BOUNDARY } from '../data/india-boundary';
@@ -108,6 +109,24 @@ function MapView({
 }) {
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
+  const [selected, setSelected] = useState<ThreatEvent | null>(null);
+
+  /** Nearest event endpoint to a tapped coordinate, within ~24 px at the current zoom. */
+  const pickNearest = async (lng: number, lat: number): Promise<ThreatEvent | null> => {
+    const zoom = (await mapRef.current?.getZoom().catch(() => null)) ?? 0;
+    const degPerPx = 360 / (512 * 2 ** zoom);
+    const threshold = degPerPx * 24;
+    let best: { e: ThreatEvent; d: number } | null = null;
+    for (const e of events) {
+      for (const [x, y] of [[e.sourceLng, e.sourceLat], [e.targetLng, e.targetLat]]) {
+        const dx = Math.abs(((x - lng + 540) % 360) - 180);
+        const dy = y - lat;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d <= threshold && (!best || d < best.d)) best = { e, d };
+      }
+    }
+    return best?.e ?? null;
+  };
 
   const zoomBy = async (delta: number) => {
     const current = (await mapRef.current?.getZoom().catch(() => null)) ?? 0;
@@ -137,12 +156,12 @@ function MapView({
         return [
           {
             type: 'Feature' as const,
-            properties: { color: SEVERITY_COLORS[e.severity], opacity: op, radius: 4 },
+            properties: { id: e.id, color: SEVERITY_COLORS[e.severity], opacity: op, radius: 4 },
             geometry: { type: 'Point' as const, coordinates: [e.sourceLng, e.sourceLat] },
           },
           {
             type: 'Feature' as const,
-            properties: { color: colors.accent, opacity: op, radius: 3 },
+            properties: { id: e.id, color: colors.accent, opacity: op, radius: 3 },
             geometry: { type: 'Point' as const, coordinates: [e.targetLng, e.targetLat] },
           },
         ];
@@ -163,6 +182,16 @@ function MapView({
         touchPitch={false}
         touchZoom
         doubleTapZoom
+        onPress={async (e) => {
+          const withFeatures = e.nativeEvent as { features?: GeoJSON.Feature[]; lngLat: [number, number] | { lng: number; lat: number } };
+          const id = withFeatures.features?.[0]?.properties?.id;
+          const byFeature = typeof id === 'string' ? events.find((x) => x.id === id) : undefined;
+          if (byFeature) return setSelected(byFeature);
+          const ll = withFeatures.lngLat;
+          const [lng, lat] = Array.isArray(ll) ? ll : [ll.lng, ll.lat];
+          const near = await pickNearest(lng, lat);
+          if (near) setSelected(near);
+        }}
       >
         <Camera ref={cameraRef} initialViewState={{ center: [15, 25], zoom: 0 }} minZoom={MIN_ZOOM} maxZoom={MAX_ZOOM} />
 
@@ -188,7 +217,16 @@ function MapView({
           />
         </GeoJSONSource>
 
-        <GeoJSONSource id="attack-points" data={points}>
+        <GeoJSONSource
+          id="attack-points"
+          data={points}
+          hitbox={{ top: 16, bottom: 16, left: 16, right: 16 }}
+          onPress={(e) => {
+            const id = e.nativeEvent.features?.[0]?.properties?.id;
+            const ev = typeof id === 'string' ? events.find((x) => x.id === id) : undefined;
+            if (ev) setSelected(ev);
+          }}
+        >
           <Layer
             id="attack-points-glow"
             type="circle"
@@ -218,6 +256,7 @@ function MapView({
           <Text style={styles.fullTitle}>LIVE THREAT MAP · simulated</Text>
         </View>
       ) : null}
+      <EventDetailSheet event={selected} onClose={() => setSelected(null)} />
       <View style={styles.controls}>
         {onMaximize ? (
           <Pressable onPress={onMaximize} style={styles.ctrlBtn} hitSlop={6}>

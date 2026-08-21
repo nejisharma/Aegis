@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Pause, Play } from 'lucide-react-native';
 import { Screen } from '../../src/components/Screen';
 import { ThreatMap } from '../../src/components/ThreatMap';
+import { EventDetailSheet } from '../../src/components/EventDetailSheet';
 import { CVSSBadge, ListRow, OfflineBanner, SectionHeader, SeverityDot, Skeleton, StatCard } from '../../src/components/ui';
 import { useSimulatedThreats } from '../../src/hooks/useSimulatedThreats';
 import { useRecentCriticalCves } from '../../src/hooks/useApi';
@@ -18,6 +19,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { events, isActive, toggleActive } = useSimulatedThreats();
   const [highlighted, setHighlighted] = useState<string | null>(null);
+  const [selected, setSelected] = useState<ThreatEvent | null>(null);
   const critical = useRecentCriticalCves();
 
   const stats = useMemo(() => {
@@ -89,9 +91,19 @@ export default function HomeScreen() {
         keyExtractor={(e) => e.id}
         ListHeaderComponent={header}
         ListFooterComponent={footer}
-        renderItem={({ item }) => <EventRow event={item} active={item.id === highlighted} onPress={() => setHighlighted((h) => (h === item.id ? null : item.id))} />}
+        renderItem={({ item }) => (
+          <EventRow
+            event={item}
+            active={item.id === highlighted}
+            onPress={() => {
+              setHighlighted(item.id);
+              setSelected(item);
+            }}
+          />
+        )}
         ListEmptyComponent={<Text style={s.empty}>{isActive ? 'Waiting for events…' : 'Paused'}</Text>}
       />
+      <EventDetailSheet event={selected} onClose={() => setSelected(null)} />
     </Screen>
   );
 }
