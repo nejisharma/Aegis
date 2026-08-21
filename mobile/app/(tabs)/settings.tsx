@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import Constants from 'expo-constants';
-import { Bell, BellOff, Code2, ExternalLink, Globe } from 'lucide-react-native';
+import { Bell, BellOff, ExternalLink, Globe } from 'lucide-react-native';
 import { Screen } from '../../src/components/Screen';
 import { Card, SectionHeader } from '../../src/components/ui';
 import { openUrl } from '../../src/lib/browser';
@@ -96,13 +96,16 @@ export default function SettingsScreen() {
       <SectionHeader title="About" />
       <View style={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}>
         <LinkRow icon={<Globe size={16} color={colors.accent} />} label="aegis.neeraj.ca" onPress={() => openUrl(SITE_URL)} />
-        <LinkRow icon={<Code2 size={16} color={colors.accent} />} label="Source on GitHub" onPress={() => openUrl('https://github.com/nejisharma/Aegis')} />
         <LinkRow icon={<ExternalLink size={16} color={colors.accent} />} label="Privacy notice" onPress={() => openUrl(`${SITE_URL}/privacy`)} />
       </View>
 
       <Text style={s.footer}>
         Aegis {version} · Data from NVD, MITRE ATT&CK, abuse.ch, AbuseIPDB, Shodan InternetDB, ip-api, Ransomware.live, OpenPhish and public RSS feeds.
-        Threat map activity is simulated for visualisation. Built by Neeraj Sharma.
+        Threat map activity is simulated for visualisation. Built by{' '}
+        <Text style={s.footerLink} onPress={() => openUrl('https://neeraj.ca')}>
+          Neeraj Sharma
+        </Text>
+        .
       </Text>
     </Screen>
   );
@@ -142,4 +145,5 @@ const s = StyleSheet.create({
   },
   linkText: { color: colors.text, fontSize: 14 },
   footer: { color: colors.muted, fontSize: 11, lineHeight: 16, padding: spacing.lg, paddingTop: spacing.xl, textAlign: 'center' },
+  footerLink: { color: colors.accent, textDecorationLine: 'underline' },
 });
