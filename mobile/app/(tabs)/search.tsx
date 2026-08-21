@@ -93,11 +93,11 @@ function IocResults({ query }: { query: string }) {
   if (error && !data) return <EmptyState title="Lookup failed" message={error.message} onRetry={() => mutate()} />;
   if (!data) return null;
 
-  const tf = data.threatfox?.data ?? [];
-  const uh = data.urlhaus?.urls ?? [];
+  const tf = Array.isArray(data.threatfox?.data) ? data.threatfox.data : [];
+  const uh = Array.isArray(data.urlhaus?.urls) ? data.urlhaus.urls : [];
   const ab = data.abuseipdb;
-  const mb = data.malware?.data ?? [];
-  const vt = data.virustotal?.attributes;
+  const mb = Array.isArray(data.malware?.data) ? data.malware.data : [];
+  const vt = data.virustotal && typeof data.virustotal === 'object' ? data.virustotal.attributes : undefined;
   const hits = tf.length + uh.length + (ab && ab.abuseConfidenceScore > 0 ? 1 : 0) + mb.length + (vt?.last_analysis_stats?.malicious ? 1 : 0);
 
   return (

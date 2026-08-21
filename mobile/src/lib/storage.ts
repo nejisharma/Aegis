@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Cache, State } from 'swr';
 
-const CACHE_KEY = 'aegis-swr-cache';
+const CACHE_KEY = 'aegis-swr-cache-v2';
 const PREF_PREFIX = 'aegis:';
 const FLUSH_DEBOUNCE_MS = 1000;
 

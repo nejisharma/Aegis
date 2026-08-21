@@ -32,9 +32,15 @@ export const useShodan = (ip: string) => useQuery(ip ? `shodan:${ip}` : null, ()
 export const useAbuseIpdb = (ip: string) =>
   useQuery(ip ? `abuseipdb:${ip}` : null, () => ep.getAbuseIpdb(ip), { revalidateOnFocus: false, shouldRetryOnError: false });
 
-export const useThreatFoxRecent = () => useQuery('threatfox:recent', () => ep.threatfoxRecent(3), { refreshInterval: 15 * 60_000 });
-export const useUrlhausRecent = () => useQuery('urlhaus:recent', () => ep.urlhausRecent(), { refreshInterval: 15 * 60_000 });
-export const useMalwareRecent = () => useQuery('malware:recent', () => ep.malwareRecent(50), { refreshInterval: 15 * 60_000 });
+// abuse.ch APIs return `data: "no_result"` (a string) on empty results; normalise to arrays.
+const arr = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
+
+export const useThreatFoxRecent = () =>
+  useQuery('threatfox:recent', () => ep.threatfoxRecent(3).then((r) => ({ ...r, data: arr<(typeof r.data)[number]>(r.data) })), { refreshInterval: 15 * 60_000 });
+export const useUrlhausRecent = () =>
+  useQuery('urlhaus:recent', () => ep.urlhausRecent().then((r) => ({ ...r, urls: arr<(typeof r.urls)[number]>(r.urls) })), { refreshInterval: 15 * 60_000 });
+export const useMalwareRecent = () =>
+  useQuery('malware:recent', () => ep.malwareRecent(50).then((r) => ({ ...r, data: arr<(typeof r.data)[number]>(r.data) })), { refreshInterval: 15 * 60_000 });
 export const useMitre = () => useQuery('mitre:all', () => ep.getMitre(), { revalidateOnFocus: false, dedupingInterval: 60 * 60_000 });
 export const useExploits = (keyword: string) =>
   useQuery(keyword.trim() ? `exploits:${keyword.trim()}` : null, () => ep.searchExploits(keyword.trim()), { revalidateOnFocus: false });
@@ -73,7 +79,15 @@ export function useIocLookup(query: string) {
       type === 'hash' ? safe('MalwareBazaar', ep.malwareHash(q)) : Promise.resolve(undefined),
       type === 'hash' ? safe('VirusTotal', ep.getVirusTotal(q)) : Promise.resolve(undefined),
     ]);
-    return { type, threatfox, urlhaus, abuseipdb, malware, virustotal, errors };
+    return {
+      type,
+      threatfox: threatfox ? { ...threatfox, data: arr(threatfox.data) } : undefined,
+      urlhaus: urlhaus ? { ...urlhaus, urls: arr(urlhaus.urls) } : undefined,
+      abuseipdb,
+      malware: malware ? { ...malware, data: arr(malware.data) } : undefined,
+      virustotal,
+      errors,
+    };
   }, { revalidateOnFocus: false, shouldRetryOnError: false });
 }
 

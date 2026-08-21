@@ -33,6 +33,7 @@ export default function HomeScreen() {
 
   const header = (
     <View>
+      <Text style={s.h1}>Aegis</Text>
       <OfflineBanner visible={critical.isOffline} />
       <View style={s.statsRow}>
         <StatCard label="Critical" value={stats.critical} color={colors.critical} />
@@ -114,6 +115,7 @@ function EventRow({ event, active, onPress }: { event: ThreatEvent; active: bool
 }
 
 const s = StyleSheet.create({
+  h1: { color: colors.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   statsRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   mapHeader: {
     flexDirection: 'row',

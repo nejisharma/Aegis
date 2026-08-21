@@ -23,7 +23,7 @@ export default function NewsScreen() {
     <Screen edges={['top', 'left', 'right']}>
       <Text style={s.h1}>Security News</Text>
       <OfflineBanner visible={isOffline} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips} style={{ flexGrow: 0 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips} style={{ flexGrow: 0, height: 52 }}>
         <Chip label="All" active={source === null} onPress={() => setSource(null)} />
         {NEWS_SOURCES.map((src) => (
           <Chip key={src} label={src} active={source === src} onPress={() => setSource(src)} />

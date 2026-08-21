@@ -1,6 +1,8 @@
-import { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Camera, GeoJSONSource, Layer, Map as MapLibreMap } from '@maplibre/maplibre-react-native';
+import { useMemo, useRef, useState } from 'react';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Camera, GeoJSONSource, Layer, Map as MapLibreMap, type CameraRef, type MapRef } from '@maplibre/maplibre-react-native';
+import { Maximize2, Minus, Plus, X } from 'lucide-react-native';
 import type { StyleSpecification } from '@maplibre/maplibre-gl-style-spec';
 import type { FeatureCollection } from 'geojson';
 import { INDIA_BOUNDARY } from '../data/india-boundary';
@@ -47,6 +49,12 @@ function arc(lat1: number, lng1: number, lat2: number, lng2: number, steps = 24)
     const z = A * Math.sin(φ1) + B * Math.sin(φ2);
     pts.push([toDeg(Math.atan2(y, x)), toDeg(Math.atan2(z, Math.sqrt(x * x + y * y)))]);
   }
+  // Unwrap longitudes so an arc crossing the antimeridian continues past ±180 instead of snapping across the map.
+  for (let i = 1; i < pts.length; i++) {
+    const delta = pts[i][0] - pts[i - 1][0];
+    if (delta > 180) pts[i][0] -= 360;
+    else if (delta < -180) pts[i][0] += 360;
+  }
   return pts;
 }
 
@@ -61,9 +69,52 @@ interface Props {
   events: ThreatEvent[];
   height?: number;
   highlightedId?: string | null;
+  /** Show the maximize button that opens the map full-screen. */
+  expandable?: boolean;
 }
 
-export function ThreatMap({ events, height = 300, highlightedId }: Props) {
+const MIN_ZOOM = 0;
+const MAX_ZOOM = 8;
+
+export function ThreatMap({ events, height = 300, highlightedId, expandable = true }: Props) {
+  const [fullscreen, setFullscreen] = useState(false);
+  const insets = useSafeAreaInsets();
+  return (
+    <>
+      <MapView events={events} height={height} highlightedId={highlightedId} onMaximize={expandable ? () => setFullscreen(true) : undefined} />
+      <Modal visible={fullscreen} animationType="fade" onRequestClose={() => setFullscreen(false)} statusBarTranslucent>
+        <View style={[styles.full, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+          <MapView events={events} height={-1} highlightedId={highlightedId} rounded={false} onClose={() => setFullscreen(false)} />
+        </View>
+      </Modal>
+    </>
+  );
+}
+
+function MapView({
+  events,
+  height,
+  highlightedId,
+  onMaximize,
+  onClose,
+  rounded = true,
+}: {
+  events: ThreatEvent[];
+  height: number;
+  highlightedId?: string | null;
+  onMaximize?: () => void;
+  onClose?: () => void;
+  rounded?: boolean;
+}) {
+  const cameraRef = useRef<CameraRef>(null);
+  const mapRef = useRef<MapRef>(null);
+
+  const zoomBy = async (delta: number) => {
+    const current = (await mapRef.current?.getZoom().catch(() => null)) ?? 0;
+    const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, current + delta));
+    cameraRef.current?.zoomTo(next, { duration: 250 });
+  };
+
   const { lines, points } = useMemo(() => {
     const now = Date.now();
     const lines: FeatureCollection = {
@@ -101,16 +152,19 @@ export function ThreatMap({ events, height = 300, highlightedId }: Props) {
   }, [events, highlightedId]);
 
   return (
-    <View style={[styles.wrap, { height }]}>
+    <View style={[styles.wrap, height > 0 ? { height } : styles.fill, !rounded && { borderRadius: 0 }]}>
       <MapLibreMap
+        ref={mapRef}
         style={styles.map}
         mapStyle={MAP_STYLE}
         attribution={false}
         logo={false}
         touchRotate={false}
         touchPitch={false}
+        touchZoom
+        doubleTapZoom
       >
-        <Camera initialViewState={{ center: [20, 20], zoom: 0.6 }} minZoom={0.3} maxZoom={8} />
+        <Camera ref={cameraRef} initialViewState={{ center: [15, 25], zoom: 0 }} minZoom={MIN_ZOOM} maxZoom={MAX_ZOOM} />
 
         {/* India boundary from Survey of India data, styled to match the tiles (same as website). */}
         <GeoJSONSource id="india-boundary" data={INDIA_BOUNDARY}>
@@ -155,11 +209,58 @@ export function ThreatMap({ events, height = 300, highlightedId }: Props) {
           />
         </GeoJSONSource>
       </MapLibreMap>
+
+      {onClose ? (
+        <View style={styles.topLeft}>
+          <Pressable onPress={onClose} style={styles.closeBtn} hitSlop={8}>
+            <X size={20} color={colors.text} />
+          </Pressable>
+          <Text style={styles.fullTitle}>LIVE THREAT MAP · simulated</Text>
+        </View>
+      ) : null}
+      <View style={styles.controls}>
+        {onMaximize ? (
+          <Pressable onPress={onMaximize} style={styles.ctrlBtn} hitSlop={6}>
+            <Maximize2 size={16} color={colors.text} />
+          </Pressable>
+        ) : null}
+        <Pressable onPress={() => zoomBy(1)} style={styles.ctrlBtn} hitSlop={6}>
+          <Plus size={16} color={colors.text} />
+        </Pressable>
+        <Pressable onPress={() => zoomBy(-1)} style={styles.ctrlBtn} hitSlop={6}>
+          <Minus size={16} color={colors.text} />
+        </Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: { width: '100%', backgroundColor: '#060a13', overflow: 'hidden', borderRadius: 12 },
+  fill: { flex: 1 },
   map: { flex: 1 },
+  controls: { position: 'absolute', right: 8, top: 8, gap: 6 },
+  ctrlBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: 'rgba(11,18,32,0.85)',
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  full: { flex: 1, backgroundColor: '#060a13' },
+  topLeft: { position: 'absolute', left: 12, top: 8, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(11,18,32,0.85)',
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fullTitle: { color: colors.subtle, fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
 });
