@@ -111,7 +111,7 @@ export default function PhishGameScreen() {
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: 'Phish or Not?' }} />
+      <Stack.Screen options={{ title: 'Phish or Not?', gestureEnabled: false, fullScreenGestureEnabled: false }} />
       {phase === 'intro' ? (
         <Intro best={best} streak={streakState} onStart={start} />
       ) : phase === 'done' ? (

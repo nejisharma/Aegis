@@ -1,5 +1,7 @@
-import { useMemo } from 'react';
-import { RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ChevronRight } from 'lucide-react-native';
+import { VictimDetailSheet } from '../src/components/VictimDetailSheet';
 import { Stack } from 'expo-router';
 import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
@@ -51,6 +53,7 @@ function VictimsList({ victims }: { victims: RansomwareVictim[] }) {
   const colors = useColors();
   const s = useMemo(() => makeStyles(colors), [colors]);
   const groupCount = useMemo(() => new Set(victims.map((v) => v.group.toLowerCase())).size, [victims]);
+  const [selected, setSelected] = useState<RansomwareVictim | null>(null);
   if (!victims.length) return <EmptyState title="No recent victims" />;
   return (
     <View style={{ paddingBottom: spacing.xl }}>
@@ -62,12 +65,13 @@ function VictimsList({ victims }: { victims: RansomwareVictim[] }) {
       {victims.map((v, i) => {
         const iso = countryToIso(v.country);
         return (
-          <View key={`${v.group}-${v.victim}-${i}`} style={s.row}>
+          <Pressable key={`${v.group}-${v.victim}-${i}`} style={({ pressed }) => [s.row, pressed && { backgroundColor: colors.surfaceAlt }]} onPress={() => setSelected(v)}>
             <View style={s.rowTop}>
               <Text style={s.victim} numberOfLines={2}>
                 {v.victim}
               </Text>
               <Pill label={v.group} color={colors.high} />
+              <ChevronRight size={16} color={colors.muted} />
             </View>
             <Text style={s.meta}>
               {iso ? `${flagEmoji(iso)} ` : ''}
@@ -76,9 +80,10 @@ function VictimsList({ victims }: { victims: RansomwareVictim[] }) {
               {timeAgo(v.date)}
               {v.activity ? ` · ${v.activity}` : ''}
             </Text>
-          </View>
+          </Pressable>
         );
       })}
+      <VictimDetailSheet victim={selected} onClose={() => setSelected(null)} />
     </View>
   );
 }

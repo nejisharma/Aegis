@@ -81,6 +81,8 @@ function ThemedApp({ cache }: { cache: Cache }) {
             headerTintColor: colors.text,
             headerTitleStyle: { color: colors.text },
             headerShadowVisible: false,
+            headerBackButtonDisplayMode: 'minimal',
+            headerBackTitle: '',
             contentStyle: { backgroundColor: colors.bg },
           }}
         >
