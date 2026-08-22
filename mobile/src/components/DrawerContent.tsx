@@ -77,8 +77,8 @@ export function DrawerContent({ navigation }: DrawerContentComponentProps) {
       <View style={s.brand}>
         <Image source={require('../../assets/splash-icon.png')} style={s.brandIcon} resizeMode="contain" />
         <View>
-          <Text style={s.brandName}>AEGIS INTEL</Text>
-          <Text style={s.brandSub}>Threat intelligence, in your pocket</Text>
+          <Text style={s.brandName}>AEGIS THREAT INTEL</Text>
+          <Text style={s.brandSub}>aegis.neeraj.ca</Text>
         </View>
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing.lg }}>
@@ -106,7 +106,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   root: { flex: 1, backgroundColor: c.surface },
   brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: c.border },
   brandIcon: { width: 44, height: 44 },
-  brandName: { color: c.text, fontSize: 16, fontWeight: '800', letterSpacing: 2 },
+  brandName: { color: c.text, fontSize: 14, fontWeight: '800', letterSpacing: 1.5 },
   brandSub: { color: c.muted, fontSize: 11 },
   section: { paddingTop: spacing.md },
   sectionTitle: { color: c.muted, fontSize: 10, fontWeight: '700', letterSpacing: 1.2, paddingHorizontal: spacing.lg, paddingBottom: 6 },
