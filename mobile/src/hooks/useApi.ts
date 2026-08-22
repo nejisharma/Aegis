@@ -61,11 +61,11 @@ export const useAbuseIpdb = (ip: string) =>
 const arr = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
 
 export const useThreatFoxRecent = () =>
-  useQuery('threatfox:recent', () => ep.threatfoxRecent(3).then((r) => ({ ...r, data: arr<(typeof r.data)[number]>(r.data) })), { refreshInterval: 15 * 60_000 });
+  useQuery('threatfox:recent', () => ep.threatfoxRecent(1).then((r) => ({ ...r, data: arr<(typeof r.data)[number]>(r.data) })), { refreshInterval: 15 * 60_000 });
 export const useUrlhausRecent = () =>
   useQuery('urlhaus:recent', () => ep.urlhausRecent().then((r) => ({ ...r, urls: arr<(typeof r.urls)[number]>(r.urls) })), { refreshInterval: 15 * 60_000 });
 export const useMalwareRecent = () =>
-  useQuery('malware:recent', () => ep.malwareRecent(50).then((r) => ({ ...r, data: arr<(typeof r.data)[number]>(r.data) })), { refreshInterval: 15 * 60_000 });
+  useQuery('malware:recent', () => ep.malwareRecent(100).then((r) => ({ ...r, data: arr<(typeof r.data)[number]>(r.data) })), { refreshInterval: 15 * 60_000 });
 export const useMitre = () => useQuery('mitre:all', () => ep.getMitre(), { revalidateOnFocus: false, dedupingInterval: 60 * 60_000 });
 export const useExploits = (keyword: string) =>
   useQuery(keyword.trim() ? `exploits:${keyword.trim()}` : null, () => ep.searchExploits(keyword.trim()), { revalidateOnFocus: false });
