@@ -40,7 +40,7 @@ workflows:
         - aegis-env
         - appstore_signing
       vars:
-        APP_ID: "0" # TODO after creating the App Store Connect record
+        APP_ID: "6804118951"
     scripts:
       - name: Install dependencies
         script: |
