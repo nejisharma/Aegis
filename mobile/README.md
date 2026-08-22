@@ -1,4 +1,6 @@
-# Aegis Mobile
+# Aegis Intel (mobile)
+
+Store name: **Aegis Intel** (the bare word "Aegis" is taken on the App Store). Home-screen label: "Aegis Intel". Bundle/package stays `ca.neeraj.aegis`.
 
 iOS / Android companion to [aegis.neeraj.ca](https://aegis.neeraj.ca). Expo SDK 57 (managed, CNG), expo-router, TypeScript. Talks only to the website's `/api/*` routes, so no third-party API keys ship in the binary.
 

@@ -10,7 +10,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage title="Privacy Policy" updated="August 21, 2026">
       <p>
-        AEGIS (&ldquo;we&rdquo;, &ldquo;the service&rdquo;) is a security-intelligence dashboard available at aegis.neeraj.ca and as the Aegis
+        AEGIS (&ldquo;we&rdquo;, &ldquo;the service&rdquo;) is a security-intelligence dashboard available at aegis.neeraj.ca and as the Aegis Intel
         mobile app for iOS and Android. It is built and operated by Neeraj Sharma. This policy explains what information the service
         handles and why. The short version: <strong>we do not want your personal data, and we go out of our way not to collect it.</strong>
       </p>

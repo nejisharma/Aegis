@@ -10,7 +10,7 @@ export default function TermsPage() {
   return (
     <LegalPage title="Terms & Conditions" updated="August 21, 2026">
       <p>
-        By using the AEGIS website (aegis.neeraj.ca) or the Aegis mobile app (together, &ldquo;the service&rdquo;), you agree to these
+        By using the AEGIS website (aegis.neeraj.ca) or the Aegis Intel mobile app (together, &ldquo;the service&rdquo;), you agree to these
         terms. If you do not agree, please do not use the service.
       </p>
 
