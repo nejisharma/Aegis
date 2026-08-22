@@ -1,0 +1,26 @@
+# Drives the push-notification detector every 30 minutes.
+# Vercel Hobby only allows daily crons, so vercel.json keeps a once-a-day fallback
+# and this workflow provides the real cadence. Needs the repo secret CRON_SECRET
+# (same value as the CRON_SECRET env var on Vercel).
+name: notify-cron
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Trigger /api/cron/notify
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then echo "CRON_SECRET secret not set"; exit 1; fi
+          code=$(curl -sS -o /tmp/out.json -w "%{http_code}" --max-time 90 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            https://aegis.neeraj.ca/api/cron/notify)
+          echo "HTTP $code"; cat /tmp/out.json; echo
+          [ "$code" = "200" ]
