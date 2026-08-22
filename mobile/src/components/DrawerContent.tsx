@@ -12,7 +12,6 @@ import {
   Globe,
   Lock,
   Newspaper,
-  Radar,
   Search,
   Settings,
   Shield,
@@ -29,7 +28,6 @@ const SECTIONS: { title: string; items: Item[] }[] = [
       { href: '/', label: 'Home · Threat Map', Icon: Globe, match: '/' },
       { href: '/news', label: 'Security News', Icon: Newspaper, match: '/news' },
       { href: '/search', label: 'Search (CVE · IOC · IP · Exploits)', Icon: Search, match: '/search' },
-      { href: '/intel', label: 'Threat Intel', Icon: Radar, match: '/intel' },
     ],
   },
   {

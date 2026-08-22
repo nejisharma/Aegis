@@ -32,7 +32,11 @@ export const getNews = (source?: string) =>
 
 // CVE (NVD proxy) — GET ?keyword=&limit=&startIndex=
 export const searchCves = (keyword: string, limit = 20, startIndex = 0) =>
-  api<NVDResponse>(`/api/cve${q({ keyword, limit, startIndex })}`);
+  api<NVDResponse>(`/api/cve${q({ keyword, limit, startIndex })}`).catch((err: unknown) => {
+    // NVD answers 404 for keywords it cannot match (e.g. "cve"); that is "no results", not an outage.
+    if (err instanceof ApiError && err.status === 404) return { resultsPerPage: limit, startIndex, totalResults: 0, vulnerabilities: [] } as NVDResponse;
+    throw err;
+  });
 
 /** The web route only supports keyword search; using the CVE id as the keyword returns that CVE. */
 export const getCveById = (id: string) => searchCves(id, 1, 0);
