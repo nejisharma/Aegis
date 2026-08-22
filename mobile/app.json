@@ -13,7 +13,8 @@
       "bundleIdentifier": "ca.neeraj.aegis",
       "supportsTablet": true,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Aegis Threat Intel does not track or use your location. The map library includes optional location support, which this app never turns on."
       },
       "associatedDomains": [
         "applinks:aegis.neeraj.ca"
