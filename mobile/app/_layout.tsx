@@ -78,7 +78,7 @@ function ThemedApp({ cache }: { cache: Cache }) {
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: colors.surface },
-            headerTintColor: colors.text,
+            headerTintColor: colors.accent,
             headerTitleStyle: { color: colors.text },
             headerShadowVisible: false,
             headerBackButtonDisplayMode: 'minimal',
