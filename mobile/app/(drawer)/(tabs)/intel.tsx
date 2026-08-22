@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAnimatedCounter } from '../../../src/hooks/useAnimatedCounter';
 import { useMitre } from '../../../src/hooks/useApi';
@@ -7,22 +8,25 @@ import { BarChart3, Bookmark, Bug, Calendar, Crosshair, Fish, Gamepad2, Lock, Sh
 import { Screen } from '../../../src/components/Screen';
 import { ScreenTitle } from '../../../src/components/ScreenTitle';
 import { AdSlot } from '../../../src/components/ui';
-import { colors } from '../../../src/theme/colors';
+import { useColors } from '../../../src/theme/ThemeProvider';
+import type { Palette } from '../../../src/theme/palettes';
 import { radius, spacing } from '../../../src/theme/spacing';
 
-const SECTIONS: { href: Href; title: string; subtitle: string; Icon: typeof Shield; color: string }[] = [
-  { href: '/watchlist', title: 'My Watchlist', subtitle: 'CVE alerts for the products you care about', Icon: Bookmark, color: colors.accent },
-  { href: '/apt', title: 'APT Tracker', subtitle: 'MITRE ATT&CK groups, TTPs, targets', Icon: Crosshair, color: colors.critical },
-  { href: '/mitre', title: 'MITRE ATT&CK', subtitle: 'Tactics → techniques, colored by APT use', Icon: Shield, color: colors.accent },
-  { href: '/ransomware', title: 'Ransomware', subtitle: 'Active groups and recent victims', Icon: Lock, color: colors.high },
-  { href: '/malware', title: 'Malware Bazaar', subtitle: 'Recent samples, hashes and signatures', Icon: Bug, color: colors.medium },
-  { href: '/phishing', title: 'Phishing Feed', subtitle: 'Live OpenPhish / PhishTank URLs', Icon: Fish, color: colors.low },
-  { href: '/calendar', title: 'Vuln Calendar', subtitle: 'Patch Tuesday, Adobe, Oracle CPU', Icon: Calendar, color: colors.success },
-  { href: '/analytics', title: 'Analytics', subtitle: 'CVSS distribution, attack vectors, countries', Icon: BarChart3, color: colors.subtle },
-  { href: '/phish-game', title: 'Phish or Not?', subtitle: 'Swipe game: spot the phishing message', Icon: Gamepad2, color: colors.accent },
+const SECTIONS: { href: Href; title: string; subtitle: string; Icon: typeof Shield; color: keyof Palette }[] = [
+  { href: '/watchlist', title: 'My Watchlist', subtitle: 'CVE alerts for the products you care about', Icon: Bookmark, color: 'accent' },
+  { href: '/apt', title: 'APT Tracker', subtitle: 'MITRE ATT&CK groups, TTPs, targets', Icon: Crosshair, color: 'critical' },
+  { href: '/mitre', title: 'MITRE ATT&CK', subtitle: 'Tactics → techniques, colored by APT use', Icon: Shield, color: 'accent' },
+  { href: '/ransomware', title: 'Ransomware', subtitle: 'Active groups and recent victims', Icon: Lock, color: 'high' },
+  { href: '/malware', title: 'Malware Bazaar', subtitle: 'Recent samples, hashes and signatures', Icon: Bug, color: 'medium' },
+  { href: '/phishing', title: 'Phishing Feed', subtitle: 'Live OpenPhish / PhishTank URLs', Icon: Fish, color: 'low' },
+  { href: '/calendar', title: 'Vuln Calendar', subtitle: 'Patch Tuesday, Adobe, Oracle CPU', Icon: Calendar, color: 'success' },
+  { href: '/analytics', title: 'Analytics', subtitle: 'CVSS distribution, attack vectors, countries', Icon: BarChart3, color: 'subtle' },
+  { href: '/phish-game', title: 'Phish or Not?', subtitle: 'Swipe game: spot the phishing message', Icon: Gamepad2, color: 'accent' },
 ];
 
 export default function IntelScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const router = useRouter();
   // Same headline figures as the website overview: drifting counters plus the live APT group count.
   const totalCves = useAnimatedCounter(254387, 2000, 6000);
@@ -42,40 +46,43 @@ export default function IntelScreen() {
         <StatCard label="APT groups" value={aptGroups} color={colors.critical} />
       </View>
       <View style={s.grid}>
-        {SECTIONS.map(({ href, title, subtitle, Icon, color }) => (
-          <Pressable key={title} onPress={() => router.push(href)} style={({ pressed }) => [s.tile, pressed && s.tilePressed]}>
-            <View style={[s.iconWrap, { backgroundColor: `${color}1f` }]}>
-              <Icon size={20} color={color} />
-            </View>
-            <Text style={s.title}>{title}</Text>
-            <Text style={s.subtitle} numberOfLines={2}>
-              {subtitle}
-            </Text>
-          </Pressable>
-        ))}
+        {SECTIONS.map(({ href, title, subtitle, Icon, color: colorKey }) => {
+          const color = colors[colorKey];
+          return (
+            <Pressable key={title} onPress={() => router.push(href)} style={({ pressed }) => [s.tile, pressed && s.tilePressed]}>
+              <View style={[s.iconWrap, { backgroundColor: `${color}1f` }]}>
+                <Icon size={20} color={color} />
+              </View>
+              <Text style={s.title}>{title}</Text>
+              <Text style={s.subtitle} numberOfLines={2}>
+                {subtitle}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
       <AdSlot placement="intel" />
     </Screen>
   );
 }
 
-const s = StyleSheet.create({
-  h1: { color: colors.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  h1: { color: c.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   stats: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   grid: { flexDirection: 'row', flexWrap: 'wrap', padding: spacing.lg, gap: spacing.md },
   tile: {
     width: '47.5%',
     flexGrow: 1,
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+    backgroundColor: c.surface,
+    borderColor: c.border,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: radius.lg,
     padding: spacing.md,
     gap: 6,
     minHeight: 120,
   },
-  tilePressed: { backgroundColor: colors.surfaceAlt },
+  tilePressed: { backgroundColor: c.surfaceAlt },
   iconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  title: { color: colors.text, fontSize: 14, fontWeight: '700', marginTop: 4 },
-  subtitle: { color: colors.muted, fontSize: 11, lineHeight: 15 },
+  title: { color: c.text, fontSize: 14, fontWeight: '700', marginTop: 4 },
+  subtitle: { color: c.muted, fontSize: 11, lineHeight: 15 },
 });

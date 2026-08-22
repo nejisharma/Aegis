@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { mutate as swrMutate } from 'swr';
 import { useRouter } from 'expo-router';
@@ -13,7 +13,8 @@ import { summarizeCve, severityColor } from '../../../src/lib/cvss';
 import { detectIocType } from '../../../src/lib/ioc';
 import { flagEmoji, shortDate, truncate } from '../../../src/lib/format';
 import { openUrl } from '../../../src/lib/browser';
-import { colors } from '../../../src/theme/colors';
+import { useColors } from '../../../src/theme/ThemeProvider';
+import type { Palette } from '../../../src/theme/palettes';
 import { spacing } from '../../../src/theme/spacing';
 
 type Mode = 'cve' | 'ioc' | 'ip' | 'exploits';
@@ -26,6 +27,8 @@ const PLACEHOLDER: Record<Mode, string> = {
 };
 
 export default function SearchScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const [mode, setMode] = useState<Mode>('cve');
   const [query, setQuery] = useState('');
   const [submitted, setSubmitted] = useState('');
@@ -90,6 +93,8 @@ function moreChars(q: string) {
 }
 
 function Hint({ text }: { text: string }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return <Text style={s.hint}>{text}</Text>;
 }
 
@@ -119,6 +124,8 @@ function CveResults({ keyword }: { keyword: string }) {
 }
 
 function IocResults({ query }: { query: string }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const type = detectIocType(query);
   const { data, error, isLoading, mutate } = useIocLookup(query);
   if (!query.trim()) return <Hint text="Checks ThreatFox, URLhaus, AbuseIPDB (IPs), MalwareBazaar and VirusTotal (hashes). Press search or Look up to run." />;
@@ -203,6 +210,8 @@ function IocResults({ query }: { query: string }) {
 }
 
 function IpResults({ ip }: { ip: string }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const valid = detectIocType(ip) === 'ip';
   const geo = useGeoIp(valid ? ip : '');
   const shodan = useShodan(valid ? ip : '');
@@ -267,6 +276,7 @@ function IpResults({ ip }: { ip: string }) {
 }
 
 function ExploitResults({ keyword }: { keyword: string }) {
+  const colors = useColors();
   const { data, error, isLoading, mutate } = useExploits(keyword.trim().length >= 3 ? keyword : '');
   if (!keyword.trim()) return <Hint text="Searches the GitHub Advisory Database for public exploits and advisories." />;
   if (keyword.trim().length < 3) return <Hint text={moreChars(keyword)} />;
@@ -285,7 +295,7 @@ function ExploitResults({ keyword }: { keyword: string }) {
             title={a.summary}
             subtitle={`${a.cveId ?? a.id} · ${shortDate(a.publishedAt)}${a.vulnerabilities[0]?.packageName ? ` · ${a.vulnerabilities[0].packageName}` : ''}`}
             right={<Pill label={a.severity.toUpperCase()} color={color} />}
-            onPress={() => openUrl(a.url)}
+            onPress={() => openUrl(a.url, colors)}
           />
         );
       })}
@@ -293,18 +303,18 @@ function ExploitResults({ keyword }: { keyword: string }) {
   );
 }
 
-const s = StyleSheet.create({
-  h1: { color: colors.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm },
-  hint: { color: colors.muted, fontSize: 13, textAlign: 'center', padding: spacing.xl, lineHeight: 19 },
-  lookupBtn: { alignSelf: 'flex-end', marginRight: spacing.lg, backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
-  lookupText: { color: colors.bg, fontWeight: '800', fontSize: 13 },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  h1: { color: c.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm },
+  hint: { color: c.muted, fontSize: 13, textAlign: 'center', padding: spacing.xl, lineHeight: 19 },
+  lookupBtn: { alignSelf: 'flex-end', marginRight: spacing.lg, backgroundColor: c.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
+  lookupText: { color: c.bg, fontWeight: '800', fontSize: 13 },
   verdict: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   verdictText: { fontSize: 14, fontWeight: '700' },
-  cardTitle: { color: colors.text, fontSize: 14, fontWeight: '700', marginBottom: 6 },
-  sub: { paddingVertical: 6, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-  subTitle: { color: colors.text, fontSize: 13, fontWeight: '600' },
-  subMeta: { color: colors.muted, fontSize: 11, marginTop: 2 },
-  none: { color: colors.muted, fontSize: 12 },
-  errors: { color: colors.medium, fontSize: 11 },
+  cardTitle: { color: c.text, fontSize: 14, fontWeight: '700', marginBottom: 6 },
+  sub: { paddingVertical: 6, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.border },
+  subTitle: { color: c.text, fontSize: 13, fontWeight: '600' },
+  subMeta: { color: c.muted, fontSize: 11, marginTop: 2 },
+  none: { color: c.muted, fontSize: 12 },
+  errors: { color: c.medium, fontSize: 11 },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
 });

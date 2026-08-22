@@ -7,10 +7,13 @@ import { EmptyState, ListRow, OfflineBanner, Skeleton, StatCard } from '../../sr
 import { useMitre } from '../../src/hooks/useApi';
 import { techniquesForTactic } from '../../src/lib/mitre';
 import { truncate } from '../../src/lib/format';
-import { colors } from '../../src/theme/colors';
+import { useColors } from '../../src/theme/ThemeProvider';
+import type { Palette } from '../../src/theme/palettes';
 import { spacing } from '../../src/theme/spacing';
 
 export default function MitreTacticsScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const router = useRouter();
   const { data, error, isLoading, isOffline, isNetworkError, mutate } = useMitre();
 
@@ -56,7 +59,7 @@ export default function MitreTacticsScreen() {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   stats: { flexDirection: 'row', gap: spacing.sm, padding: spacing.lg },
-  count: { color: colors.accent, fontSize: 11, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  count: { color: c.accent, fontSize: 11, fontWeight: '600', fontVariant: ['tabular-nums'] },
 });

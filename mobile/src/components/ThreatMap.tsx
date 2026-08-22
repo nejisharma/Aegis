@@ -9,29 +9,33 @@ import type { FeatureCollection } from 'geojson';
 import { INDIA_BOUNDARY } from '../data/india-boundary';
 import { SEVERITY_COLORS } from '../lib/constants';
 import type { ThreatEvent } from '../api/types';
-import { colors } from '../theme/colors';
+import { useColors, useTheme } from '../theme/ThemeProvider';
+import type { Palette } from '../theme/palettes';
 
-// Same tiles as the website (CartoDB dark_all). Raster, no API key.
-const MAP_STYLE: StyleSpecification = {
-  version: 8,
-  sources: {
-    carto: {
-      type: 'raster',
-      tiles: [
-        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-      ],
-      tileSize: 256,
-      attribution: '© OpenStreetMap contributors © CARTO',
-      maxzoom: 18,
+// Same tiles as the website (CartoDB dark_all / light_all). Raster, no API key.
+function makeMapStyle(isDark: boolean, bg: string): StyleSpecification {
+  const variant = isDark ? 'dark_all' : 'light_all';
+  return {
+    version: 8,
+    sources: {
+      carto: {
+        type: 'raster',
+        tiles: [
+          `https://a.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}.png`,
+          `https://b.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}.png`,
+          `https://c.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}.png`,
+        ],
+        tileSize: 256,
+        attribution: '© OpenStreetMap contributors © CARTO',
+        maxzoom: 18,
+      },
     },
-  },
-  layers: [
-    { id: 'bg', type: 'background', paint: { 'background-color': '#060a13' } },
-    { id: 'carto', type: 'raster', source: 'carto', paint: { 'raster-opacity': 1 } },
-  ],
-};
+    layers: [
+      { id: 'bg', type: 'background', paint: { 'background-color': bg } },
+      { id: 'carto', type: 'raster', source: 'carto', paint: { 'raster-opacity': 1 } },
+    ],
+  };
+}
 
 /** Great-circle arc between two points, so long attack lines curve like the web version. */
 function arc(lat1: number, lng1: number, lat2: number, lng2: number, steps = 24): [number, number][] {
@@ -78,6 +82,8 @@ const MIN_ZOOM = 0;
 const MAX_ZOOM = 8;
 
 export function ThreatMap({ events, height = 300, highlightedId, expandable = true }: Props) {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [fullscreen, setFullscreen] = useState(false);
   const insets = useSafeAreaInsets();
   return (
@@ -107,9 +113,13 @@ function MapView({
   onClose?: () => void;
   rounded?: boolean;
 }) {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { isDark } = useTheme();
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
   const [selected, setSelected] = useState<ThreatEvent | null>(null);
+  const mapStyle = useMemo(() => makeMapStyle(isDark, colors.bg), [isDark, colors.bg]);
 
   /** Nearest event endpoint to a tapped coordinate, within ~24 px at the current zoom. */
   const pickNearest = async (lng: number, lat: number): Promise<ThreatEvent | null> => {
@@ -168,14 +178,14 @@ function MapView({
       }),
     };
     return { lines, points };
-  }, [events, highlightedId]);
+  }, [events, highlightedId, colors.accent]);
 
   return (
     <View style={[styles.wrap, height > 0 ? { height } : styles.fill, !rounded && { borderRadius: 0 }]}>
       <MapLibreMap
         ref={mapRef}
         style={styles.map}
-        mapStyle={MAP_STYLE}
+        mapStyle={mapStyle}
         attribution={false}
         logo={false}
         touchRotate={false}
@@ -200,7 +210,7 @@ function MapView({
           <Layer
             id="india-boundary-line"
             type="line"
-            paint={{ 'line-color': '#4a4a4a', 'line-width': 0.8, 'line-opacity': 0.6 }}
+            paint={{ 'line-color': isDark ? '#4a4a4a' : '#9aa3b2', 'line-width': 0.8, 'line-opacity': 0.6 }}
           />
         </GeoJSONSource>
 
@@ -274,8 +284,8 @@ function MapView({
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { width: '100%', backgroundColor: '#060a13', overflow: 'hidden', borderRadius: 12 },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  wrap: { width: '100%', backgroundColor: c.bg, overflow: 'hidden', borderRadius: 12 },
   fill: { flex: 1 },
   map: { flex: 1 },
   controls: { position: 'absolute', right: 8, top: 8, gap: 6 },
@@ -283,23 +293,23 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: 'rgba(11,18,32,0.85)',
+    backgroundColor: `${c.surface}d9`,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  full: { flex: 1, backgroundColor: '#060a13' },
+  full: { flex: 1, backgroundColor: c.bg },
   topLeft: { position: 'absolute', left: 12, top: 8, flexDirection: 'row', alignItems: 'center', gap: 10 },
   closeBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(11,18,32,0.85)',
+    backgroundColor: `${c.surface}d9`,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fullTitle: { color: colors.subtle, fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
+  fullTitle: { color: c.subtle, fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
 });

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePathname, useRouter, type Href } from 'expo-router';
@@ -17,7 +18,8 @@ import {
   Settings,
   Shield,
 } from 'lucide-react-native';
-import { colors } from '../theme/colors';
+import { useColors } from '../theme/ThemeProvider';
+import type { Palette } from '../theme/palettes';
 import { radius, spacing } from '../theme/spacing';
 
 type Item = { href: Href; label: string; Icon: typeof Shield; match: string };
@@ -55,6 +57,8 @@ const SECTIONS: { title: string; items: Item[] }[] = [
 ];
 
 export function DrawerContent({ navigation }: DrawerContentComponentProps) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
@@ -94,18 +98,18 @@ export function DrawerContent({ navigation }: DrawerContentComponentProps) {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.surface },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.surface },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: c.border },
   brandIcon: { width: 44, height: 44 },
-  brandName: { color: colors.text, fontSize: 16, fontWeight: '800', letterSpacing: 2 },
-  brandSub: { color: colors.muted, fontSize: 11 },
+  brandName: { color: c.text, fontSize: 16, fontWeight: '800', letterSpacing: 2 },
+  brandSub: { color: c.muted, fontSize: 11 },
   section: { paddingTop: spacing.md },
-  sectionTitle: { color: colors.muted, fontSize: 10, fontWeight: '700', letterSpacing: 1.2, paddingHorizontal: spacing.lg, paddingBottom: 6 },
+  sectionTitle: { color: c.muted, fontSize: 10, fontWeight: '700', letterSpacing: 1.2, paddingHorizontal: spacing.lg, paddingBottom: 6 },
   item: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: 11, marginHorizontal: spacing.sm, borderRadius: radius.md },
-  itemActive: { backgroundColor: colors.accentDim },
-  itemPressed: { backgroundColor: colors.surfaceAlt },
-  itemText: { color: colors.text, fontSize: 14, fontWeight: '500' },
-  itemTextActive: { color: colors.accent, fontWeight: '700' },
-  footer: { color: colors.muted, fontSize: 11, textAlign: 'center', paddingTop: spacing.sm },
+  itemActive: { backgroundColor: c.accentDim },
+  itemPressed: { backgroundColor: c.surfaceAlt },
+  itemText: { color: c.text, fontSize: 14, fontWeight: '500' },
+  itemTextActive: { color: c.accent, fontWeight: '700' },
+  footer: { color: c.muted, fontSize: 11, textAlign: 'center', paddingTop: spacing.sm },
 });

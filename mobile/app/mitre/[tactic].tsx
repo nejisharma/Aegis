@@ -7,10 +7,13 @@ import { EmptyState, ListRow, OfflineBanner, SeverityDot, Skeleton } from '../..
 import { useMitre } from '../../src/hooks/useApi';
 import { groupUsageCounts, subtechniquesOf, techniquesForTactic, usageColor } from '../../src/lib/mitre';
 import { truncate } from '../../src/lib/format';
-import { colors } from '../../src/theme/colors';
+import { useColors } from '../../src/theme/ThemeProvider';
+import type { Palette } from '../../src/theme/palettes';
 import { spacing } from '../../src/theme/spacing';
 
 export default function MitreTacticScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const router = useRouter();
   const { tactic: tacticId } = useLocalSearchParams<{ tactic: string }>();
   const { data, error, isLoading, isOffline, isNetworkError, mutate } = useMitre();
@@ -51,7 +54,7 @@ export default function MitreTacticScreen() {
             <ListRow
               title={technique.name}
               subtitle={`${technique.id} · used by ${groups} group${groups === 1 ? '' : 's'}${subs ? ` · ${subs} sub-technique${subs === 1 ? '' : 's'}` : ''}`}
-              left={<SeverityDot color={usageColor(groups)} size={10} />}
+              left={<SeverityDot color={usageColor(groups, colors)} size={10} />}
               onPress={() => router.push({ pathname: '/mitre/technique/[id]', params: { id: technique.id } })}
             />
           )}
@@ -61,9 +64,9 @@ export default function MitreTacticScreen() {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   header: { padding: spacing.lg, gap: spacing.sm },
-  tacticId: { color: colors.accent, fontSize: 12, fontWeight: '700', fontFamily: 'monospace' },
-  desc: { color: colors.subtle, fontSize: 13, lineHeight: 19 },
-  count: { color: colors.muted, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 },
+  tacticId: { color: c.accent, fontSize: 12, fontWeight: '700', fontFamily: 'monospace' },
+  desc: { color: c.subtle, fontSize: 13, lineHeight: 19 },
+  count: { color: c.muted, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 },
 });

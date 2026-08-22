@@ -10,7 +10,8 @@ import { Pill } from '../src/components/ui';
 import { PHISH_CARDS, type PhishCard, type PhishChannel } from '../src/data/phish-cards';
 import { gradeFor, maxScore, pickRound, scoreAnswer, type Answer } from '../src/lib/phish-game';
 import { getPref, setPref } from '../src/lib/storage';
-import { colors } from '../src/theme/colors';
+import { useColors } from '../src/theme/ThemeProvider';
+import type { Palette } from '../src/theme/palettes';
 import { radius, spacing } from '../src/theme/spacing';
 
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -29,11 +30,13 @@ const CHANNEL_META: Record<PhishChannel, { label: string; Icon: typeof Mail }> =
   chat: { label: 'Chat', Icon: MessageSquare },
 };
 
-const DIFF_COLOR = { easy: colors.success, medium: colors.medium, hard: colors.critical } as const;
+const DIFF_COLOR: Record<'easy' | 'medium' | 'hard', keyof Palette> = { easy: 'success', medium: 'medium', hard: 'critical' };
 
 type Phase = 'intro' | 'playing' | 'reveal' | 'done';
 
 export default function PhishGameScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const [phase, setPhase] = useState<Phase>('intro');
   const [round, setRound] = useState<PhishCard[]>([]);
   const [index, setIndex] = useState(0);
@@ -149,6 +152,8 @@ export default function PhishGameScreen() {
 }
 
 function StreakBadge({ streak }: { streak: StreakState }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const today = dayKey(new Date());
   const days = effectiveStreak(streak, today);
   const doneToday = streak.lastDay === today ? streak.roundsToday : 0;
@@ -168,6 +173,8 @@ function StreakBadge({ streak }: { streak: StreakState }) {
 }
 
 function Intro({ best, streak, onStart }: { best: number; streak: StreakState; onStart: () => void }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.center}>
       <StreakBadge streak={streak} />
@@ -192,6 +199,8 @@ function Intro({ best, streak, onStart }: { best: number; streak: StreakState; o
 }
 
 function SwipeCard({ card, disabled, onSwipe }: { card: PhishCard; disabled: boolean; onSwipe: (saidPhish: boolean) => void }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const pan = useRef(new Animated.ValueXY()).current;
   const swiped = useRef(false);
 
@@ -242,7 +251,7 @@ function SwipeCard({ card, disabled, onSwipe }: { card: PhishCard; disabled: boo
           <Icon size={14} color={colors.subtle} />
           <Text style={s.channel}>{label}</Text>
         </View>
-        <Pill label={card.difficulty.toUpperCase()} color={DIFF_COLOR[card.difficulty]} />
+        <Pill label={card.difficulty.toUpperCase()} color={colors[DIFF_COLOR[card.difficulty]]} />
       </View>
 
       <Text style={s.fromLabel}>FROM</Text>
@@ -267,6 +276,8 @@ function SwipeCard({ card, disabled, onSwipe }: { card: PhishCard; disabled: boo
 }
 
 function Reveal({ answer, last, onNext }: { answer: Answer; last: boolean; onNext: () => void }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const { card } = answer;
   const color = answer.correct ? colors.success : colors.critical;
   return (
@@ -290,6 +301,8 @@ function Reveal({ answer, last, onNext }: { answer: Answer; last: boolean; onNex
 }
 
 function Summary({ answers, score, max, best, streak, onAgain }: { answers: Answer[]; score: number; max: number; best: number; streak: StreakState; onAgain: () => void }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const grade = gradeFor(score, max);
   const correct = answers.filter((a) => a.correct).length;
   const byDiff = (['easy', 'medium', 'hard'] as const).map((d) => {
@@ -311,7 +324,7 @@ function Summary({ answers, score, max, best, streak, onAgain }: { answers: Answ
       <View style={s.diffRow}>
         {byDiff.map(({ d, ok, n }) => (
           <View key={d} style={s.diffCell}>
-            <Text style={[s.diffVal, { color: DIFF_COLOR[d] }]}>
+            <Text style={[s.diffVal, { color: colors[DIFF_COLOR[d]] }]}>
               {ok}/{n}
             </Text>
             <Text style={s.diffLabel}>{d}</Text>
@@ -337,64 +350,64 @@ function Summary({ answers, score, max, best, streak, onAgain }: { answers: Answ
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   streakRow: { flexDirection: 'row', gap: spacing.sm },
-  streakPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
-  streakText: { color: colors.subtle, fontSize: 12, fontWeight: '700' },
+  streakPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+  streakText: { color: c.subtle, fontSize: 12, fontWeight: '700' },
   center: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md },
-  heroIcon: { width: 84, height: 84, borderRadius: 42, backgroundColor: colors.accentDim, alignItems: 'center', justifyContent: 'center' },
-  h1: { color: colors.text, fontSize: 24, fontWeight: '800', textAlign: 'center' },
-  lead: { color: colors.subtle, fontSize: 14, lineHeight: 21, textAlign: 'center', maxWidth: 340 },
-  best: { color: colors.medium, fontSize: 13, fontWeight: '600' },
-  fine: { color: colors.muted, fontSize: 11, textAlign: 'center', maxWidth: 320 },
-  startBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.accent, paddingHorizontal: 26, paddingVertical: 12, borderRadius: radius.lg, marginTop: spacing.sm },
-  startText: { color: colors.bg, fontWeight: '800', fontSize: 15 },
+  heroIcon: { width: 84, height: 84, borderRadius: 42, backgroundColor: c.accentDim, alignItems: 'center', justifyContent: 'center' },
+  h1: { color: c.text, fontSize: 24, fontWeight: '800', textAlign: 'center' },
+  lead: { color: c.subtle, fontSize: 14, lineHeight: 21, textAlign: 'center', maxWidth: 340 },
+  best: { color: c.medium, fontSize: 13, fontWeight: '600' },
+  fine: { color: c.muted, fontSize: 11, textAlign: 'center', maxWidth: 320 },
+  startBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: c.accent, paddingHorizontal: 26, paddingVertical: 12, borderRadius: radius.lg, marginTop: spacing.sm },
+  startText: { color: c.bg, fontWeight: '800', fontSize: 15 },
   playArea: { flex: 1, padding: spacing.lg, gap: spacing.md },
   hud: { flexDirection: 'row', justifyContent: 'space-between' },
-  hudText: { color: colors.subtle, fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  hudText: { color: c.subtle, fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
   deck: { flex: 1, justifyContent: 'center' },
-  cardShadow: { position: 'absolute', left: 12, right: 12, top: 12, bottom: -10, borderRadius: radius.lg + 4, backgroundColor: colors.surfaceAlt, borderWidth: 1, borderColor: colors.border },
+  cardShadow: { position: 'absolute', left: 12, right: 12, top: 12, bottom: -10, borderRadius: radius.lg + 4, backgroundColor: c.surfaceAlt, borderWidth: 1, borderColor: c.border },
   dimmed: { opacity: 0.55 },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.lg + 4,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     padding: spacing.lg,
     gap: 4,
     maxHeight: 420,
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
-  channel: { color: colors.subtle, fontSize: 12, fontWeight: '700', letterSpacing: 0.8 },
-  fromLabel: { color: colors.muted, fontSize: 10, fontWeight: '700', letterSpacing: 1, marginTop: 6 },
-  from: { color: colors.accent, fontSize: 13, fontWeight: '600' },
-  subject: { color: colors.text, fontSize: 15, fontWeight: '700' },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginVertical: spacing.sm },
-  body: { color: colors.text, fontSize: 14, lineHeight: 21 },
+  channel: { color: c.subtle, fontSize: 12, fontWeight: '700', letterSpacing: 0.8 },
+  fromLabel: { color: c.muted, fontSize: 10, fontWeight: '700', letterSpacing: 1, marginTop: 6 },
+  from: { color: c.accent, fontSize: 13, fontWeight: '600' },
+  subject: { color: c.text, fontSize: 15, fontWeight: '700' },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: c.border, marginVertical: spacing.sm },
+  body: { color: c.text, fontSize: 14, lineHeight: 21 },
   mono: { fontFamily: 'monospace', fontSize: 13 },
-  swipeHint: { color: colors.muted, fontSize: 11, textAlign: 'center', marginTop: spacing.sm },
+  swipeHint: { color: c.muted, fontSize: 11, textAlign: 'center', marginTop: spacing.sm },
   stamp: { position: 'absolute', top: 18, zIndex: 2, borderWidth: 3, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, transform: [{ rotate: '-12deg' }] },
-  stampPhish: { right: 18, borderColor: colors.critical },
-  stampLegit: { left: 18, borderColor: colors.success, transform: [{ rotate: '12deg' }] },
+  stampPhish: { right: 18, borderColor: c.critical },
+  stampLegit: { left: 18, borderColor: c.success, transform: [{ rotate: '12deg' }] },
   stampText: { fontSize: 22, fontWeight: '900', letterSpacing: 2 },
   buttons: { flexDirection: 'row', gap: spacing.md },
   btn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: radius.lg, borderWidth: 1.5 },
-  btnLegit: { borderColor: colors.success, backgroundColor: 'rgba(34,197,94,0.10)' },
-  btnPhish: { borderColor: colors.critical, backgroundColor: 'rgba(239,68,68,0.10)' },
+  btnLegit: { borderColor: c.success, backgroundColor: `${c.success}1a` },
+  btnPhish: { borderColor: c.critical, backgroundColor: `${c.critical}1a` },
   btnText: { fontSize: 15, fontWeight: '800' },
-  reveal: { backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1.5, padding: spacing.md, gap: 6 },
+  reveal: { backgroundColor: c.surface, borderRadius: radius.lg, borderWidth: 1.5, padding: spacing.md, gap: 6 },
   revealTitle: { fontSize: 13, fontWeight: '800' },
   revealPts: { fontSize: 16, fontWeight: '800' },
-  tell: { color: colors.subtle, fontSize: 13, lineHeight: 18 },
-  nextBtn: { alignSelf: 'flex-end', backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: radius.md, marginTop: 4 },
-  nextText: { color: colors.bg, fontWeight: '800' },
-  bigScore: { color: colors.text, fontSize: 40, fontWeight: '900' },
-  bigScoreMax: { color: colors.muted, fontSize: 16, fontWeight: '600' },
+  tell: { color: c.subtle, fontSize: 13, lineHeight: 18 },
+  nextBtn: { alignSelf: 'flex-end', backgroundColor: c.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: radius.md, marginTop: 4 },
+  nextText: { color: c.bg, fontWeight: '800' },
+  bigScore: { color: c.text, fontSize: 40, fontWeight: '900' },
+  bigScoreMax: { color: c.muted, fontSize: 16, fontWeight: '600' },
   diffRow: { flexDirection: 'row', gap: spacing.md },
-  diffCell: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 16 },
+  diffCell: { alignItems: 'center', backgroundColor: c.surface, borderRadius: radius.md, borderWidth: 1, borderColor: c.border, paddingVertical: 8, paddingHorizontal: 16 },
   diffVal: { fontSize: 18, fontWeight: '800' },
-  diffLabel: { color: colors.muted, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.8 },
+  diffLabel: { color: c.muted, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.8 },
   reviewRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
-  reviewText: { flex: 1, color: colors.subtle, fontSize: 12 },
+  reviewText: { flex: 1, color: c.subtle, fontSize: 12 },
   reviewVerdict: { fontSize: 11, fontWeight: '700' },
 });

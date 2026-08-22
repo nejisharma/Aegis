@@ -8,7 +8,8 @@ import { Card, EmptyState, KeyValue, ListRow, Loading, OfflineBanner, Pill, Sect
 import { useMitre } from '../../../src/hooks/useApi';
 import { groupsUsingTechnique, subtechniquesOf, tacticsForTechnique, usageColor } from '../../../src/lib/mitre';
 import { openUrl } from '../../../src/lib/browser';
-import { colors } from '../../../src/theme/colors';
+import { useColors } from '../../../src/theme/ThemeProvider';
+import type { Palette } from '../../../src/theme/palettes';
 import { spacing } from '../../../src/theme/spacing';
 import type { MITREData, MITRETechnique } from '../../../src/api/types';
 
@@ -33,6 +34,8 @@ export default function TechniqueDetailScreen() {
 }
 
 function TechniqueBody({ technique, data }: { technique: MITRETechnique; data: MITREData }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const router = useRouter();
   const tactics = useMemo(() => tacticsForTechnique(data.tactics, technique), [data, technique]);
   const groups = useMemo(() => groupsUsingTechnique(data.groups, technique.id).sort((a, b) => a.name.localeCompare(b.name)), [data, technique]);
@@ -47,7 +50,7 @@ function TechniqueBody({ technique, data }: { technique: MITRETechnique; data: M
             {technique.id}
           </Text>
           <View style={s.usage}>
-            <SeverityDot color={usageColor(groups.length)} />
+            <SeverityDot color={usageColor(groups.length, colors)} />
             <Text style={s.usageText}>
               used by {groups.length} group{groups.length === 1 ? '' : 's'}
             </Text>
@@ -114,7 +117,7 @@ function TechniqueBody({ technique, data }: { technique: MITRETechnique; data: M
         )}
       </View>
 
-      <Pressable onPress={() => openUrl(technique.url)} style={s.link}>
+      <Pressable onPress={() => openUrl(technique.url, colors)} style={s.link}>
         <ExternalLink size={14} color={colors.accent} />
         <Text style={s.linkText}>View on MITRE ATT&CK</Text>
       </Pressable>
@@ -122,15 +125,15 @@ function TechniqueBody({ technique, data }: { technique: MITRETechnique; data: M
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-  id: { color: colors.accent, fontSize: 14, fontWeight: '700', fontFamily: 'monospace' },
+  id: { color: c.accent, fontSize: 14, fontWeight: '700', fontFamily: 'monospace' },
   usage: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  usageText: { color: colors.subtle, fontSize: 12 },
-  name: { color: colors.text, fontSize: 22, fontWeight: '700' },
-  parent: { color: colors.accent, fontSize: 12 },
-  desc: { color: colors.text, fontSize: 14, lineHeight: 21 },
-  muted: { color: colors.muted, fontSize: 13 },
+  usageText: { color: c.subtle, fontSize: 12 },
+  name: { color: c.text, fontSize: 22, fontWeight: '700' },
+  parent: { color: c.accent, fontSize: 12 },
+  desc: { color: c.text, fontSize: 14, lineHeight: 21 },
+  muted: { color: c.muted, fontSize: 13 },
   padded: { paddingHorizontal: spacing.lg },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   link: {
@@ -140,10 +143,10 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderWidth: 1,
-    borderColor: colors.accent,
+    borderColor: c.accent,
     borderRadius: 10,
     paddingHorizontal: 18,
     paddingVertical: 10,
   },
-  linkText: { color: colors.accent, fontWeight: '600' },
+  linkText: { color: c.accent, fontWeight: '600' },
 });

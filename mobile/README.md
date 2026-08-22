@@ -15,6 +15,8 @@ Design spec: `../docs/superpowers/specs/2026-08-21-aegis-mobile-design.md`.
 | Settings | Push notification toggles (Critical CVEs, News digest), links |
 | Phish or Not? | Swipe game: 10 cards per round (3 easy / 4 medium / 3 hard) drawn from 300 hand-written phishing/legit messages in `src/data/phish-cards.ts`; tells shown after each swipe; personal best persisted |
 | Sidebar | Hamburger on every tab opens a drawer listing every page |
+| Watchlist | Keywords/products the user follows: matching CVEs from the last 30 days, plus push alerts for new ones (category `watchlist`) |
+| Extras | Pull-to-refresh everywhere, "Updated 3m ago" stamps, share sheet on CVEs/news, haptics + daily streak + review prompt in the game, Dark/Light/System theme, two-column Home on tablets, universal links (`https://aegis.neeraj.ca/cve/CVE-...` opens the app) |
 
 Everything fetched is cached to AsyncStorage, so each screen renders the last data instantly and offline.
 
@@ -57,6 +59,10 @@ Built on Codemagic (`codemagic.yaml`, workflow `ios-testflight`) because this ma
 6. **App Store Connect record** for `ca.neeraj.aegis`, then set `APP_ID` in `codemagic.yaml`.
 7. **Privacy labels** — declare "Device ID (push token) — App Functionality, not linked to user". Nothing else is collected.
 8. **Review notes** — mention that the threat map is simulated/visualised activity, that Malware Bazaar shows metadata only, and that phishing URLs are never opened by the app.
+9. **Crash reporting (optional)** — create a Sentry project and set `EXPO_PUBLIC_SENTRY_DSN` (in `.env` locally / the `aegis-env` group on Codemagic). Without it Sentry is completely disabled (`src/lib/monitoring.ts`).
+10. **Android upload key** — already generated at `D:\PLAY STORE IMPORTANT\Aegis\upload.jks` (password in `upload-keystore-password.txt`, base64 for Codemagic in `upload-keystore-base64-for-codemagic.txt`). Local release builds read it from `~/.gradle/gradle.properties` (`AEGIS_UPLOAD_*`, already written on this machine) via `plugins/withReleaseSigning.js`. Build: `cd android && ./gradlew bundleRelease` → `android/app/build/outputs/bundle/release/app-release.aab`. **Never lose this keystore** — Play requires the same upload key for every update.
+11. **Universal links** — Android: `public/.well-known/assetlinks.json` already contains this upload key's SHA-256; if Play App Signing re-signs the app, also add the *Play* signing certificate fingerprint from the Play Console. iOS: replace `TEAMID` in `public/.well-known/apple-app-site-association` with your Apple Team ID (Apple Developer → Membership). Both files must be deployed on aegis.neeraj.ca before the OS opens links in the app.
+12. **iOS verification** — everything has been verified on the Android emulator only; run the Codemagic `ios-testflight` workflow (or a Mac simulator) and check the Search keyboard/safe-areas and the game's swipe thresholds on iPhone.
 
 ## Ads
 

@@ -1,16 +1,21 @@
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { ChevronRight, WifiOff } from 'lucide-react-native';
-import { colors } from '../theme/colors';
+import { useColors } from '../theme/ThemeProvider';
+import type { Palette } from '../theme/palettes';
 import { radius, spacing } from '../theme/spacing';
 import { severityColor, type Severity } from '../lib/cvss';
 import { timeAgo } from '../lib/format';
 
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return <View style={[s.card, style]}>{children}</View>;
 }
 
 export function SectionHeader({ title, right }: { title: string; right?: ReactNode }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.sectionHeader}>
       <Text style={s.sectionTitle}>{title.toUpperCase()}</Text>
@@ -19,16 +24,20 @@ export function SectionHeader({ title, right }: { title: string; right?: ReactNo
   );
 }
 
-export function StatCard({ label, value, color = colors.accent }: { label: string; value: string | number; color?: string }) {
+export function StatCard({ label, value, color }: { label: string; value: string | number; color?: string }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.stat}>
-      <Text style={[s.statValue, { color }]}>{value}</Text>
+      <Text style={[s.statValue, { color: color ?? colors.accent }]}>{value}</Text>
       <Text style={s.statLabel}>{label}</Text>
     </View>
   );
 }
 
 export function CVSSBadge({ score, severity }: { score: number | null; severity?: Severity | string }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const sev = severity ?? (score === null ? 'NONE' : undefined);
   const color = severityColor(sev ?? 'NONE');
   return (
@@ -39,7 +48,10 @@ export function CVSSBadge({ score, severity }: { score: number | null; severity?
   );
 }
 
-export function Pill({ label, color = colors.subtle }: { label: string; color?: string }) {
+export function Pill({ label, color: colorProp }: { label: string; color?: string }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+  const color = colorProp ?? colors.subtle;
   return (
     <View style={[s.pill, { borderColor: `${color}66`, backgroundColor: `${color}1f` }]}>
       <Text style={[s.pillText, { color }]}>{label}</Text>
@@ -52,6 +64,8 @@ export function SeverityDot({ color, size = 8 }: { color: string; size?: number 
 }
 
 export function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Pressable onPress={onPress} style={[s.chip, active && s.chipActive]}>
       <Text style={[s.chipText, active && s.chipTextActive]}>{label}</Text>
@@ -74,6 +88,8 @@ export function ListRow({
   onPress?: () => void;
   chevron?: boolean;
 }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Pressable onPress={onPress} disabled={!onPress} style={({ pressed }) => [s.row, pressed && s.rowPressed]}>
       {left ? <View style={s.rowLeft}>{left}</View> : null}
@@ -94,6 +110,8 @@ export function ListRow({
 }
 
 export function Skeleton({ lines = 3 }: { lines?: number }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={{ gap: spacing.sm, padding: spacing.md }}>
       {Array.from({ length: lines }).map((_, i) => (
@@ -104,6 +122,8 @@ export function Skeleton({ lines = 3 }: { lines?: number }) {
 }
 
 export function Loading({ label = 'Loading…' }: { label?: string }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.center}>
       <ActivityIndicator color={colors.accent} />
@@ -113,6 +133,8 @@ export function Loading({ label = 'Loading…' }: { label?: string }) {
 }
 
 export function EmptyState({ title, message, onRetry }: { title: string; message?: string; onRetry?: () => void }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.center}>
       <Text style={s.emptyTitle}>{title}</Text>
@@ -127,6 +149,8 @@ export function EmptyState({ title, message, onRetry }: { title: string; message
 }
 
 export function OfflineBanner({ visible, networkError = true }: { visible: boolean; networkError?: boolean }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   if (!visible) return null;
   return (
     <View style={s.offline}>
@@ -137,6 +161,8 @@ export function OfflineBanner({ visible, networkError = true }: { visible: boole
 }
 
 export function KeyValue({ label, value, mono }: { label: string; value: ReactNode; mono?: boolean }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.kv}>
       <Text style={s.kvLabel}>{label}</Text>
@@ -153,6 +179,8 @@ export function KeyValue({ label, value, mono }: { label: string; value: ReactNo
 
 /** "Updated 3m ago" line under a feed so cached data is not mistaken for live. */
 export function UpdatedAt({ at, refreshing }: { at: number | null | undefined; refreshing?: boolean }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Text style={s.updatedAt}>
       {refreshing ? 'Refreshing…' : at ? `Updated ${timeAgo(at)}` : 'Showing cached data'}
@@ -165,10 +193,10 @@ export function AdSlot(_props: { placement: string }) {
   return null;
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+    backgroundColor: c.surface,
+    borderColor: c.border,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: radius.lg,
     padding: spacing.md,
@@ -181,11 +209,11 @@ const s = StyleSheet.create({
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
   },
-  sectionTitle: { color: colors.subtle, fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
+  sectionTitle: { color: c.subtle, fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
   stat: {
     flex: 1,
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+    backgroundColor: c.surface,
+    borderColor: c.border,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: radius.md,
     paddingVertical: spacing.sm,
@@ -193,7 +221,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: { fontSize: 20, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  statLabel: { color: colors.muted, fontSize: 10, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.8 },
+  statLabel: { color: c.muted, fontSize: 10, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.8 },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -212,12 +240,12 @@ const s = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    borderColor: c.border,
+    backgroundColor: c.surface,
   },
-  chipActive: { borderColor: colors.accent, backgroundColor: colors.accentDim },
-  chipText: { color: colors.subtle, fontSize: 12, fontWeight: '600' },
-  chipTextActive: { color: colors.accent },
+  chipActive: { borderColor: c.accent, backgroundColor: c.accentDim },
+  chipText: { color: c.subtle, fontSize: 12, fontWeight: '600' },
+  chipTextActive: { color: c.accent },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -225,38 +253,38 @@ const s = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
+    borderBottomColor: c.border,
   },
-  rowPressed: { backgroundColor: colors.surfaceAlt },
+  rowPressed: { backgroundColor: c.surfaceAlt },
   rowLeft: { alignItems: 'center', justifyContent: 'center' },
   rowBody: { flex: 1, gap: 2 },
-  rowTitle: { color: colors.text, fontSize: 14, fontWeight: '600' },
-  rowSubtitle: { color: colors.muted, fontSize: 12 },
-  skel: { height: 12, borderRadius: 6, backgroundColor: colors.surfaceAlt },
+  rowTitle: { color: c.text, fontSize: 14, fontWeight: '600' },
+  rowSubtitle: { color: c.muted, fontSize: 12 },
+  skel: { height: 12, borderRadius: 6, backgroundColor: c.surfaceAlt },
   center: { alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.sm },
-  muted: { color: colors.muted, fontSize: 13, textAlign: 'center' },
-  emptyTitle: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  muted: { color: c.muted, fontSize: 13, textAlign: 'center' },
+  emptyTitle: { color: c.text, fontSize: 15, fontWeight: '600' },
   retry: {
     marginTop: spacing.sm,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.accent,
+    borderColor: c.accent,
   },
-  retryText: { color: colors.accent, fontWeight: '600' },
+  retryText: { color: c.accent, fontWeight: '600' },
   offline: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(234,179,8,0.12)',
+    backgroundColor: `${c.medium}1f`,
     paddingHorizontal: spacing.lg,
     paddingVertical: 6,
   },
-  offlineText: { color: colors.medium, fontSize: 12, fontWeight: '600' },
-  updatedAt: { color: colors.muted, fontSize: 11, paddingHorizontal: spacing.lg, paddingBottom: 4 },
+  offlineText: { color: c.medium, fontSize: 12, fontWeight: '600' },
+  updatedAt: { color: c.muted, fontSize: 11, paddingHorizontal: spacing.lg, paddingBottom: 4 },
   kv: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, paddingVertical: 6 },
-  kvLabel: { color: colors.muted, fontSize: 12, flexShrink: 0 },
-  kvValue: { color: colors.text, fontSize: 13, flex: 1, textAlign: 'right' },
+  kvLabel: { color: c.muted, fontSize: 12, flexShrink: 0 },
+  kvValue: { color: c.text, fontSize: 13, flex: 1, textAlign: 'right' },
   mono: { fontFamily: 'monospace', fontSize: 12 },
 });

@@ -11,7 +11,8 @@ import { summarizeCve } from '../src/lib/cvss';
 import { shortDate, truncate } from '../src/lib/format';
 import { loadPrefs, loadToken, normalizeTerm, WATCHLIST_MAX_TERMS } from '../src/notifications/prefs';
 import { setWatchlistTerms } from '../src/notifications/register';
-import { colors } from '../src/theme/colors';
+import { useColors } from '../src/theme/ThemeProvider';
+import type { Palette } from '../src/theme/palettes';
 import { radius, spacing } from '../src/theme/spacing';
 import type { CVEItem } from '../src/api/types';
 
@@ -26,6 +27,8 @@ function matches(item: CVEItem, term: string): boolean {
 }
 
 export default function WatchlistScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const router = useRouter();
   const [terms, setTerms] = useState<string[]>([]);
   const [draft, setDraft] = useState('');
@@ -147,17 +150,17 @@ export default function WatchlistScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  lead: { color: colors.subtle, fontSize: 13, lineHeight: 19 },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  lead: { color: c.subtle, fontSize: 13, lineHeight: 19 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginHorizontal: -spacing.lg },
-  addBtn: { width: 42, height: 42, borderRadius: radius.md, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', marginRight: spacing.lg },
-  cardTitle: { color: colors.text, fontSize: 13, fontWeight: '700', marginBottom: 8 },
+  addBtn: { width: 42, height: 42, borderRadius: radius.md, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', marginRight: spacing.lg },
+  cardTitle: { color: c.text, fontSize: 13, fontWeight: '700', marginBottom: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  suggestion: { borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
-  suggestionText: { color: colors.subtle, fontSize: 12 },
-  term: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.accentDim, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
-  termText: { color: colors.accent, fontSize: 13, fontWeight: '700' },
-  notice: { backgroundColor: 'rgba(234,179,8,0.12)', borderRadius: radius.md, padding: spacing.md },
-  noticeText: { color: colors.medium, fontSize: 12 },
-  empty: { color: colors.muted, fontSize: 13, textAlign: 'center', padding: spacing.lg },
+  suggestion: { borderWidth: 1, borderColor: c.border, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  suggestionText: { color: c.subtle, fontSize: 12 },
+  term: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.accentDim, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+  termText: { color: c.accent, fontSize: 13, fontWeight: '700' },
+  notice: { backgroundColor: `${c.medium}1f`, borderRadius: radius.md, padding: spacing.md },
+  noticeText: { color: c.medium, fontSize: 12 },
+  empty: { color: c.muted, fontSize: 13, textAlign: 'center', padding: spacing.lg },
 });

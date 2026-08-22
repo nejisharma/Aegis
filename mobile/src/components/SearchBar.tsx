@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 import { Search, X } from 'lucide-react-native';
-import { colors } from '../theme/colors';
+import { useColors } from '../theme/ThemeProvider';
+import type { Palette } from '../theme/palettes';
 import { radius, spacing } from '../theme/spacing';
 
 interface Props extends Omit<TextInputProps, 'style'> {
@@ -10,6 +12,8 @@ interface Props extends Omit<TextInputProps, 'style'> {
 }
 
 export function SearchBar({ value, onChangeText, onSubmit, placeholder = 'Search…', ...rest }: Props) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.wrap}>
       <Search size={16} color={colors.muted} />
@@ -34,7 +38,7 @@ export function SearchBar({ value, onChangeText, onSubmit, placeholder = 'Search
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   wrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -45,8 +49,8 @@ const s = StyleSheet.create({
     height: 42,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    borderColor: c.border,
+    backgroundColor: c.surface,
   },
-  input: { flex: 1, color: colors.text, fontSize: 14, paddingVertical: 0 },
+  input: { flex: 1, color: c.text, fontSize: 14, paddingVertical: 0 },
 });

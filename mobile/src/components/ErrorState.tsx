@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Ellipse, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 import { ApiError } from '../api/client';
 import { classifyFailure, type FailureKind } from '../lib/connectivity';
-import { colors } from '../theme/colors';
+import { useColors } from '../theme/ThemeProvider';
+import type { Palette } from '../theme/palettes';
 import { radius, spacing } from '../theme/spacing';
 
 const COPY: Record<FailureKind, { title: string; message: string }> = {
@@ -34,6 +35,8 @@ interface Props {
 
 /** Full error panel: figures out whether it is the user's network or our server, and shows a matching illustration. */
 export function ErrorState({ error, onRetry, detail }: Props) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const [kind, setKind] = useState<FailureKind | null>(null);
 
   useEffect(() => {
@@ -66,6 +69,7 @@ export function ErrorState({ error, onRetry, detail }: Props) {
 
 /** A server rack fast asleep, with a hard hat and "zzz". */
 function SleepingServerArt() {
+  const colors = useColors();
   return (
     <Svg width={160} height={130} viewBox="0 0 160 130">
       {/* rack */}
@@ -100,6 +104,7 @@ function SleepingServerArt() {
 
 /** A phone holding a bare cable with a puzzled face and a crossed-out wifi. */
 function NoSignalArt() {
+  const colors = useColors();
   return (
     <Svg width={160} height={130} viewBox="0 0 160 130">
       {/* wifi arcs */}
@@ -129,6 +134,7 @@ function NoSignalArt() {
 
 /** A shrugging shield — something else went wrong. */
 function ShrugArt() {
+  const colors = useColors();
   return (
     <Svg width={160} height={130} viewBox="0 0 160 130">
       <Path d="M80 12 L118 26 V62 C118 90 96 108 80 116 C64 108 42 90 42 62 V26 Z" fill={colors.surfaceAlt} stroke={colors.accent} strokeWidth={3} />
@@ -142,11 +148,11 @@ function ShrugArt() {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   wrap: { alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.sm },
-  title: { color: colors.text, fontSize: 16, fontWeight: '700', textAlign: 'center', marginTop: spacing.sm },
-  message: { color: colors.subtle, fontSize: 13, textAlign: 'center', lineHeight: 19, maxWidth: 320 },
-  detail: { color: colors.muted, fontSize: 11, textAlign: 'center' },
-  retry: { marginTop: spacing.sm, paddingHorizontal: 18, paddingVertical: 9, borderRadius: radius.md, borderWidth: 1, borderColor: colors.accent },
-  retryText: { color: colors.accent, fontWeight: '700' },
+  title: { color: c.text, fontSize: 16, fontWeight: '700', textAlign: 'center', marginTop: spacing.sm },
+  message: { color: c.subtle, fontSize: 13, textAlign: 'center', lineHeight: 19, maxWidth: 320 },
+  detail: { color: c.muted, fontSize: 11, textAlign: 'center' },
+  retry: { marginTop: spacing.sm, paddingHorizontal: 18, paddingVertical: 9, borderRadius: radius.md, borderWidth: 1, borderColor: c.accent },
+  retryText: { color: c.accent, fontWeight: '700' },
 });

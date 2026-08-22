@@ -10,11 +10,14 @@ import { Chip, EmptyState, OfflineBanner, Skeleton, UpdatedAt } from '../../../s
 import { useNews } from '../../../src/hooks/useApi';
 import { NEWS_SOURCES } from '../../../src/lib/constants';
 import { timeAgo } from '../../../src/lib/format';
-import { colors } from '../../../src/theme/colors';
+import { useColors } from '../../../src/theme/ThemeProvider';
+import type { Palette } from '../../../src/theme/palettes';
 import { spacing } from '../../../src/theme/spacing';
 import type { NewsItem } from '../../../src/api/types';
 
 export default function NewsScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const [source, setSource] = useState<string | null>(null);
   const { data, error, isLoading, isValidating, isOffline, isNetworkError, updatedAt, mutate } = useNews();
 
@@ -53,8 +56,10 @@ export default function NewsScreen() {
 }
 
 function NewsRow({ item }: { item: NewsItem }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
-    <Pressable onPress={() => openUrl(item.link)} style={({ pressed }) => [s.row, pressed && { backgroundColor: colors.surfaceAlt }]}>
+    <Pressable onPress={() => openUrl(item.link, colors)} style={({ pressed }) => [s.row, pressed && { backgroundColor: colors.surfaceAlt }]}>
       <View style={s.meta}>
         <Text style={s.source}>
           {item.sourceIcon} {item.source}
@@ -76,13 +81,13 @@ function NewsRow({ item }: { item: NewsItem }) {
   );
 }
 
-const s = StyleSheet.create({
-  h1: { color: colors.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  h1: { color: c.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   chips: { flexDirection: 'row', gap: 8, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
-  row: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, gap: 4 },
+  row: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: c.border, gap: 4 },
   meta: { flexDirection: 'row', justifyContent: 'space-between' },
-  source: { color: colors.accent, fontSize: 11, fontWeight: '600' },
-  time: { color: colors.muted, fontSize: 11 },
-  title: { color: colors.text, fontSize: 15, fontWeight: '600', lineHeight: 20 },
-  desc: { color: colors.subtle, fontSize: 12, lineHeight: 17 },
+  source: { color: c.accent, fontSize: 11, fontWeight: '600' },
+  time: { color: c.muted, fontSize: 11 },
+  title: { color: c.text, fontSize: 15, fontWeight: '600', lineHeight: 20 },
+  desc: { color: c.subtle, fontSize: 12, lineHeight: 17 },
 });

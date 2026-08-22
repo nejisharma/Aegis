@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SWRConfig } from 'swr';
 import type { Cache } from 'swr';
-import { colors } from '../src/theme/colors';
+import { ThemeProvider, useTheme } from '../src/theme/ThemeProvider';
 import { createPersistedCacheProvider, hydrateCache } from '../src/lib/storage';
 import { useNotificationRouting } from '../src/notifications/handlers';
 import { loadToken } from '../src/notifications/prefs';
@@ -32,10 +32,6 @@ function RootLayout() {
     };
   }, []);
 
-  useEffect(() => {
-    if (cache) SplashScreen.hideAsync().catch(() => {});
-  }, [cache]);
-
   // Re-register the push token on every cold start (idempotent upsert) if the user enabled notifications.
   useEffect(() => {
     loadToken().then((t) => {
@@ -47,6 +43,21 @@ function RootLayout() {
   if (!cache) return null;
 
   return (
+    <ThemeProvider>
+      <ThemedApp cache={cache} />
+    </ThemeProvider>
+  );
+}
+
+function ThemedApp({ cache }: { cache: Cache }) {
+  const { colors, isDark } = useTheme();
+
+  // ThemeProvider renders null until the saved mode is loaded, so this only runs once both cache and theme are ready.
+  useEffect(() => {
+    SplashScreen.hideAsync().catch(() => {});
+  }, []);
+
+  return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <SWRConfig
         value={{
@@ -56,7 +67,7 @@ function RootLayout() {
           dedupingInterval: 5000,
         }}
       >
-        <StatusBar style="light" />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
         <NotificationRouter />
         <Stack
           screenOptions={{

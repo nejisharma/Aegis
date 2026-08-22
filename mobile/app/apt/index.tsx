@@ -8,12 +8,15 @@ import { EmptyState, ListRow, OfflineBanner, Skeleton } from '../../src/componen
 import { useMitre } from '../../src/hooks/useApi';
 import { countryToIso, filterGroups, sortGroupsByTechniques } from '../../src/lib/mitre';
 import { flagEmoji, truncate } from '../../src/lib/format';
-import { colors } from '../../src/theme/colors';
+import { useColors } from '../../src/theme/ThemeProvider';
+import type { Palette } from '../../src/theme/palettes';
 import { spacing } from '../../src/theme/spacing';
 
 const NO_FLAG = '\u{1F3F3}️';
 
 export default function AptTrackerScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const router = useRouter();
   const [query, setQuery] = useState('');
   const { data, error, isLoading, isOffline, isNetworkError, mutate } = useMitre();
@@ -60,8 +63,8 @@ export default function AptTrackerScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  count: { color: colors.muted, fontSize: 11, paddingHorizontal: spacing.lg, paddingVertical: spacing.xs, textTransform: 'uppercase', letterSpacing: 1 },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  count: { color: c.muted, fontSize: 11, paddingHorizontal: spacing.lg, paddingVertical: spacing.xs, textTransform: 'uppercase', letterSpacing: 1 },
   flagWrap: { width: 32, alignItems: 'center' },
   flag: { fontSize: 22 },
 });

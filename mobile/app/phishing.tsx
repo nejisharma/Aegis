@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { AlertTriangle } from 'lucide-react-native';
@@ -6,10 +7,13 @@ import { Screen } from '../src/components/Screen';
 import { EmptyState, ListRow, OfflineBanner, Pill, Skeleton, StatCard, UpdatedAt } from '../src/components/ui';
 import { usePhishing } from '../src/hooks/useApi';
 import { timeAgo } from '../src/lib/format';
-import { colors } from '../src/theme/colors';
+import { useColors } from '../src/theme/ThemeProvider';
+import type { Palette } from '../src/theme/palettes';
 import { spacing } from '../src/theme/spacing';
 
 export default function PhishingScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const { data, error, isLoading, isValidating, isOffline, isNetworkError, updatedAt, mutate } = usePhishing();
   const entries = data?.entries ?? [];
 
@@ -55,8 +59,8 @@ export default function PhishingScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  warn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(234,179,8,0.12)', paddingHorizontal: spacing.lg, paddingVertical: 6 },
-  warnText: { color: colors.medium, fontSize: 12, fontWeight: '600' },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  warn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: `${c.medium}1f`, paddingHorizontal: spacing.lg, paddingVertical: 6 },
+  warnText: { color: c.medium, fontSize: 12, fontWeight: '600' },
   stats: { flexDirection: 'row', gap: spacing.sm, padding: spacing.lg },
 });

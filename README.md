@@ -90,6 +90,10 @@ CRON_SECRET=...              # Any random string; Vercel sends it as `Authorizat
 
 Without these the push routes respond `{skipped: "no redis"}` and the website is unaffected.
 
+Notification categories: `critical_cve` (CVSS ≥ 9.0, immediate), `news_digest` (batched, at most every 3 h), `watchlist` (any new CVE mentioning a term the device follows).
+
+`/privacy`, `/terms` and `/cve/[id]` are standalone pages; `public/.well-known/` holds the Android/iOS app-link association files for the mobile app.
+
 ## Deployment
 
 Deploy to Vercel (recommended):

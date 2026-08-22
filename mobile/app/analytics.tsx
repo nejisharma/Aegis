@@ -10,21 +10,23 @@ import { attackVectorDistribution, severityDistribution, topCountries, topTechni
 import { generateBatch } from '../src/lib/threat-simulator';
 import { severityColor } from '../src/lib/cvss';
 import { flagEmoji } from '../src/lib/format';
-import { colors } from '../src/theme/colors';
+import { useColors } from '../src/theme/ThemeProvider';
+import type { Palette } from '../src/theme/palettes';
 import { radius, spacing } from '../src/theme/spacing';
 
 /** Broad NVD keyword so the sample spans all severities (the home tab's "critical" query is too narrow). */
 /** Roughly what the web map accumulates in its 60-second window. */
 const SIM_EVENTS = 120;
 
-const VECTOR_COLORS: Record<string, string> = {
-  NETWORK: colors.critical,
-  ADJACENT: colors.high,
-  LOCAL: colors.medium,
-  PHYSICAL: colors.low,
+const VECTOR_COLORS: Record<string, keyof Palette> = {
+  NETWORK: 'critical',
+  ADJACENT: 'high',
+  LOCAL: 'medium',
+  PHYSICAL: 'low',
 };
 
 export default function AnalyticsScreen() {
+  const colors = useColors();
   const cves = useRecentCves();
   const mitre = useMitre();
   // Mirrors the web: counts derived from the simulated threat stream; the refresh button re-rolls the sample.
@@ -55,7 +57,7 @@ export default function AnalyticsScreen() {
 
         <Card>
           <CardTitle title="Attack vectors" note="CVSS v3.1 AV" />
-          {cves.isLoading && !cves.data ? <Skeleton lines={4} /> : cves.data ? <Bars buckets={vectors} colorFor={(b) => VECTOR_COLORS[b.label] ?? colors.muted} /> : null}
+          {cves.isLoading && !cves.data ? <Skeleton lines={4} /> : cves.data ? <Bars buckets={vectors} colorFor={(b) => colors[VECTOR_COLORS[b.label] ?? 'muted']} /> : null}
         </Card>
 
         <Card>
@@ -104,6 +106,8 @@ export default function AnalyticsScreen() {
 }
 
 function CardTitle({ title, note, right }: { title: string; note?: string; right?: ReactNode }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.cardHead}>
       <Text style={s.cardTitle}>{title}</Text>
@@ -114,6 +118,8 @@ function CardTitle({ title, note, right }: { title: string; note?: string; right
 }
 
 function Bars({ buckets, colorFor }: { buckets: Bucket[]; colorFor: (b: Bucket) => string }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const max = Math.max(1, ...buckets.map((b) => b.count));
   if (!buckets.some((b) => b.count > 0)) return <Text style={s.none}>No scored results.</Text>;
   return (
@@ -126,6 +132,8 @@ function Bars({ buckets, colorFor }: { buckets: Bucket[]; colorFor: (b: Bucket) 
 }
 
 function BarRow({ rank, label, value, pct, color }: { rank?: number; label: string; value: string | number; pct: number; color: string }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.barRow}>
       {rank !== undefined ? <Text style={s.rank}>{rank}</Text> : null}
@@ -140,15 +148,15 @@ function BarRow({ rank, label, value, pct, color }: { rank?: number; label: stri
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   cardHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
-  cardTitle: { color: colors.text, fontSize: 14, fontWeight: '700' },
-  cardNote: { color: colors.muted, fontSize: 11, flex: 1 },
-  none: { color: colors.muted, fontSize: 12 },
+  cardTitle: { color: c.text, fontSize: 14, fontWeight: '700' },
+  cardNote: { color: c.muted, fontSize: 11, flex: 1 },
+  none: { color: c.muted, fontSize: 12 },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  rank: { color: colors.muted, fontSize: 11, width: 14, textAlign: 'right', fontVariant: ['tabular-nums'] },
-  barLabel: { color: colors.subtle, fontSize: 12, width: 120 },
-  track: { flex: 1, height: 12, borderRadius: radius.sm, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
+  rank: { color: c.muted, fontSize: 11, width: 14, textAlign: 'right', fontVariant: ['tabular-nums'] },
+  barLabel: { color: c.subtle, fontSize: 12, width: 120 },
+  track: { flex: 1, height: 12, borderRadius: radius.sm, backgroundColor: c.surfaceAlt, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: radius.sm },
   value: { fontSize: 11, fontWeight: '600', minWidth: 44, textAlign: 'right', fontVariant: ['tabular-nums'] },
 });

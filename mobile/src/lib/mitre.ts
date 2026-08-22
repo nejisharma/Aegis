@@ -1,5 +1,6 @@
 import type { MITREData, MITREGroup, MITRETactic, MITRETechnique } from '../api/types';
 import { colors } from '../theme/colors';
+import type { Palette } from '../theme/palettes';
 
 /** Same matching rule as the web MitreMatrixPanel: refs may hold the tactic id or its shortName. */
 export function techniqueBelongsToTactic(technique: MITRETechnique, tactic: MITRETactic): boolean {
@@ -36,12 +37,13 @@ export function groupUsageCounts(groups: MITREGroup[]): Record<string, number> {
   return counts;
 }
 
-export function usageColor(groupCount: number): string {
-  if (groupCount <= 0) return colors.muted;
-  if (groupCount <= 2) return colors.low;
-  if (groupCount <= 5) return colors.medium;
-  if (groupCount <= 9) return colors.high;
-  return colors.critical;
+/** Colour for how many APT groups use a technique. Pass the active palette from `useColors()`; defaults to dark. */
+export function usageColor(groupCount: number, c: Palette = colors): string {
+  if (groupCount <= 0) return c.muted;
+  if (groupCount <= 2) return c.low;
+  if (groupCount <= 5) return c.medium;
+  if (groupCount <= 9) return c.high;
+  return c.critical;
 }
 
 /** Country names as they appear in MITRE group data -> ISO 3166-1 alpha-2. Mirrors the web APTGroupCard map. */

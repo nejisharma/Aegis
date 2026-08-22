@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../theme/colors';
+import { useColors } from '../theme/ThemeProvider';
+import type { Palette } from '../theme/palettes';
 import { radius, spacing } from '../theme/spacing';
 
 interface Props<T extends string> {
@@ -10,6 +12,8 @@ interface Props<T extends string> {
 }
 
 export function Segmented<T extends string>({ options, value, onChange, scroll }: Props<T>) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const content = (
     <View style={s.wrap}>
       {options.map((o) => {
@@ -32,18 +36,18 @@ export function Segmented<T extends string>({ options, value, onChange, scroll }
   return <View style={{ paddingHorizontal: spacing.lg }}>{content}</View>;
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   wrap: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     padding: 3,
     gap: 2,
   },
   seg: { flex: 1, paddingVertical: 7, paddingHorizontal: 12, borderRadius: radius.sm, alignItems: 'center' },
-  segActive: { backgroundColor: colors.accentDim },
-  text: { color: colors.muted, fontSize: 12, fontWeight: '600' },
-  textActive: { color: colors.accent },
+  segActive: { backgroundColor: c.accentDim },
+  text: { color: c.muted, fontSize: 12, fontWeight: '600' },
+  textActive: { color: c.accent },
 });

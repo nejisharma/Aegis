@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { X } from 'lucide-react-native';
 import type { ThreatEvent } from '../api/types';
 import { SEVERITY_COLORS, THREAT_TYPE_LABELS } from '../lib/constants';
 import { flagEmoji, timeAgo } from '../lib/format';
-import { colors } from '../theme/colors';
+import { useColors } from '../theme/ThemeProvider';
+import type { Palette } from '../theme/palettes';
 import { radius, spacing } from '../theme/spacing';
 
 const TYPE_DESCRIPTIONS: Record<ThreatEvent['type'], string> = {
@@ -23,6 +25,8 @@ interface Props {
 
 /** Bottom-sheet with the same information as the website's marker popup, plus coordinates and a type description. */
 export function EventDetailSheet({ event, onClose }: Props) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const color = event ? SEVERITY_COLORS[event.severity] : colors.muted;
   return (
     <Modal visible={!!event} transparent animationType="slide" onRequestClose={onClose}>
@@ -58,6 +62,8 @@ export function EventDetailSheet({ event, onClose }: Props) {
 }
 
 function Endpoint({ title, code, name, lat, lng, accent }: { title: string; code: string; name: string; lat: number; lng: number; accent: string }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.endpoint}>
       <Text style={[s.endpointTitle, { color: accent }]}>{title.toUpperCase()}</Text>
@@ -71,29 +77,29 @@ function Endpoint({ title, code, name, lat, lng, accent }: { title: string; code
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)' },
   sheet: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderTopLeftRadius: radius.lg + 6,
     borderTopRightRadius: radius.lg + 6,
     borderTopWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     padding: spacing.lg,
     paddingBottom: spacing.xl + 8,
     gap: spacing.sm,
   },
-  handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, marginBottom: 4 },
+  handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: c.border, marginBottom: 4 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   kicker: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  label: { color: colors.text, fontSize: 16, fontWeight: '700', lineHeight: 22 },
-  desc: { color: colors.subtle, fontSize: 12, lineHeight: 17 },
+  label: { color: c.text, fontSize: 16, fontWeight: '700', lineHeight: 22 },
+  desc: { color: c.subtle, fontSize: 12, lineHeight: 17 },
   route: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
-  endpoint: { flex: 1, backgroundColor: colors.surfaceAlt, borderRadius: radius.md, padding: spacing.md, gap: 2 },
+  endpoint: { flex: 1, backgroundColor: c.surfaceAlt, borderRadius: radius.md, padding: spacing.md, gap: 2 },
   endpointTitle: { fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-  endpointName: { color: colors.text, fontSize: 14, fontWeight: '600' },
-  coords: { color: colors.muted, fontSize: 11, fontVariant: ['tabular-nums'] },
-  arrow: { color: colors.muted, fontSize: 18 },
+  endpointName: { color: c.text, fontSize: 14, fontWeight: '600' },
+  coords: { color: c.muted, fontSize: 11, fontVariant: ['tabular-nums'] },
+  arrow: { color: c.muted, fontSize: 18 },
   footer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
-  meta: { color: colors.muted, fontSize: 11 },
+  meta: { color: c.muted, fontSize: 11 },
 });

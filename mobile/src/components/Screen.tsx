@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, View, type RefreshControlProps, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
-import { colors } from '../theme/colors';
+import { useColors } from '../theme/ThemeProvider';
+import type { Palette } from '../theme/palettes';
 import { spacing } from '../theme/spacing';
 
 interface ScreenProps {
@@ -25,6 +26,8 @@ export function Screen({
   style,
   refreshControl,
 }: ScreenProps) {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const inner = padded ? styles.padded : undefined;
   return (
     <SafeAreaView style={[styles.root, style]} edges={edges}>
@@ -44,8 +47,8 @@ export function Screen({
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.bg },
   padded: { padding: spacing.lg },
   scrollContent: { flexGrow: 1 },
 });

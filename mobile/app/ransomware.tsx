@@ -7,24 +7,26 @@ import { Card, EmptyState, KeyValue, OfflineBanner, Pill, SectionHeader, Skeleto
 import { useRansomware } from '../src/hooks/useApi';
 import { flagEmoji, timeAgo } from '../src/lib/format';
 import { countryToIso } from '../src/lib/mitre';
-import { colors } from '../src/theme/colors';
+import { useColors } from '../src/theme/ThemeProvider';
+import type { Palette } from '../src/theme/palettes';
 import { spacing } from '../src/theme/spacing';
 import type { RansomwareGroup, RansomwareVictim } from '../src/api/types';
 
-function statusColor(status: string): string {
+function statusColor(status: string, c: Palette): string {
   switch (status.toLowerCase()) {
     case 'active':
-      return colors.critical;
+      return c.critical;
     case 'disrupted':
-      return colors.medium;
+      return c.medium;
     case 'rebranded':
-      return colors.muted;
+      return c.muted;
     default:
-      return colors.subtle;
+      return c.subtle;
   }
 }
 
 export default function RansomwareScreen() {
+  const colors = useColors();
   const { data, error, isLoading, isValidating, isOffline, isNetworkError, updatedAt, mutate } = useRansomware();
 
   return (
@@ -46,6 +48,8 @@ export default function RansomwareScreen() {
 }
 
 function VictimsList({ victims }: { victims: RansomwareVictim[] }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const groupCount = useMemo(() => new Set(victims.map((v) => v.group.toLowerCase())).size, [victims]);
   if (!victims.length) return <EmptyState title="No recent victims" />;
   return (
@@ -80,6 +84,8 @@ function VictimsList({ victims }: { victims: RansomwareVictim[] }) {
 }
 
 function GroupsList({ groups }: { groups: RansomwareGroup[] }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   if (!groups.length) return <EmptyState title="No groups" />;
   return (
     <View style={{ padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl }}>
@@ -87,7 +93,7 @@ function GroupsList({ groups }: { groups: RansomwareGroup[] }) {
         <Card key={g.name}>
           <View style={s.rowTop}>
             <Text style={s.groupName}>{g.name}</Text>
-            <Pill label={g.status.toUpperCase()} color={statusColor(g.status)} />
+            <Pill label={g.status.toUpperCase()} color={statusColor(g.status, colors)} />
           </View>
           <Text style={s.desc}>{g.description}</Text>
           <KeyValue label="Active" value={`${g.firstSeen} – ${g.lastSeen}`} />
@@ -105,13 +111,13 @@ function GroupsList({ groups }: { groups: RansomwareGroup[] }) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   stats: { flexDirection: 'row', gap: spacing.sm, padding: spacing.lg },
-  row: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, gap: 4, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  row: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, gap: 4, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: c.border },
   rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-  victim: { color: colors.text, fontSize: 14, fontWeight: '600', flex: 1 },
-  meta: { color: colors.muted, fontSize: 12 },
-  groupName: { color: colors.text, fontSize: 16, fontWeight: '700', flex: 1 },
-  desc: { color: colors.subtle, fontSize: 13, lineHeight: 19, marginVertical: spacing.sm },
+  victim: { color: c.text, fontSize: 14, fontWeight: '600', flex: 1 },
+  meta: { color: c.muted, fontSize: 12 },
+  groupName: { color: c.text, fontSize: 16, fontWeight: '700', flex: 1 },
+  desc: { color: c.subtle, fontSize: 13, lineHeight: 19, marginVertical: spacing.sm },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: spacing.sm },
 });

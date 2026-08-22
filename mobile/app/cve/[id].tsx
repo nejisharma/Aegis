@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { shareCve } from '../../src/lib/share';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -8,10 +9,12 @@ import { CVSSBadge, Card, EmptyState, KeyValue, Loading, OfflineBanner, Pill, Se
 import { useCve } from '../../src/hooks/useApi';
 import { summarizeCve } from '../../src/lib/cvss';
 import { shortDate } from '../../src/lib/format';
-import { colors } from '../../src/theme/colors';
+import { useColors } from '../../src/theme/ThemeProvider';
+import type { Palette } from '../../src/theme/palettes';
 import { spacing } from '../../src/theme/spacing';
 
 export default function CveDetailScreen() {
+  const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const cveId = (id ?? '').toUpperCase();
   const { data, error, isLoading, isOffline, isNetworkError, mutate } = useCve(cveId);
@@ -42,6 +45,8 @@ export default function CveDetailScreen() {
 }
 
 function CveBody({ item }: { item: NonNullable<ReturnType<typeof useCve>['data']>['vulnerabilities'][number] }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const c = summarizeCve(item);
   const metric = item.cve.metrics?.cvssMetricV31?.[0]?.cvssData;
   const weaknesses = item.cve.weaknesses?.flatMap((w) => w.description.map((d) => d.value)).filter((v) => v !== 'NVD-CWE-noinfo' && v !== 'NVD-CWE-Other') ?? [];
@@ -107,13 +112,13 @@ function CveBody({ item }: { item: NonNullable<ReturnType<typeof useCve>['data']
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-  id: { color: colors.accent, fontSize: 18, fontWeight: '700', fontFamily: 'monospace' },
-  desc: { color: colors.text, fontSize: 14, lineHeight: 21 },
+  id: { color: c.accent, fontSize: 18, fontWeight: '700', fontFamily: 'monospace' },
+  desc: { color: c.text, fontSize: 14, lineHeight: 21 },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingHorizontal: spacing.lg },
   ref: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: spacing.lg, paddingVertical: 8 },
-  refText: { color: colors.subtle, fontSize: 12, flex: 1 },
-  nvd: { marginTop: spacing.md, alignSelf: 'center', borderWidth: 1, borderColor: colors.accent, borderRadius: 10, paddingHorizontal: 18, paddingVertical: 10 },
-  nvdText: { color: colors.accent, fontWeight: '600' },
+  refText: { color: c.subtle, fontSize: 12, flex: 1 },
+  nvd: { marginTop: spacing.md, alignSelf: 'center', borderWidth: 1, borderColor: c.accent, borderRadius: 10, paddingHorizontal: 18, paddingVertical: 10 },
+  nvdText: { color: c.accent, fontWeight: '600' },
 });

@@ -12,11 +12,14 @@ import { useRecentCriticalCves } from '../../../src/hooks/useApi';
 import { SEVERITY_COLORS, THREAT_TYPE_LABELS } from '../../../src/lib/constants';
 import { summarizeCve } from '../../../src/lib/cvss';
 import { timeAgo, truncate } from '../../../src/lib/format';
-import { colors } from '../../../src/theme/colors';
+import { useColors } from '../../../src/theme/ThemeProvider';
+import type { Palette } from '../../../src/theme/palettes';
 import { spacing } from '../../../src/theme/spacing';
 import type { ThreatEvent } from '../../../src/api/types';
 
 export default function HomeScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const router = useRouter();
   const { events, isActive, toggleActive } = useSimulatedThreats();
   const [highlighted, setHighlighted] = useState<string | null>(null);
@@ -138,6 +141,8 @@ export default function HomeScreen() {
 }
 
 function EventRow({ event, active, onPress }: { event: ThreatEvent; active: boolean; onPress: () => void }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const color = SEVERITY_COLORS[event.severity];
   return (
     <Pressable onPress={onPress} style={[s.event, active && s.eventActive]}>
@@ -155,11 +160,11 @@ function EventRow({ event, active, onPress }: { event: ThreatEvent; active: bool
   );
 }
 
-const s = StyleSheet.create({
-  h1: { color: colors.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  h1: { color: c.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   statsRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   wideRow: { flexDirection: 'row', gap: spacing.md, paddingHorizontal: spacing.lg, alignItems: 'flex-start' },
-  wideList: { flex: 2, backgroundColor: colors.surface, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, overflow: 'hidden' },
+  wideList: { flex: 2, backgroundColor: c.surface, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: c.border, overflow: 'hidden' },
   mapHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -169,9 +174,9 @@ const s = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   liveDot: { width: 7, height: 7, borderRadius: 4 },
-  mapTitle: { color: colors.subtle, fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
-  simulated: { color: colors.muted, fontSize: 11 },
-  count: { color: colors.muted, fontSize: 11, fontVariant: ['tabular-nums'] },
+  mapTitle: { color: c.subtle, fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
+  simulated: { color: c.muted, fontSize: 11 },
+  count: { color: c.muted, fontSize: 11, fontVariant: ['tabular-nums'] },
   event: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -179,13 +184,13 @@ const s = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
+    borderBottomColor: c.border,
   },
-  eventActive: { backgroundColor: colors.surfaceAlt },
-  eventTitle: { color: colors.text, fontSize: 13, fontWeight: '600' },
-  eventMeta: { color: colors.muted, fontSize: 11, marginTop: 2 },
+  eventActive: { backgroundColor: c.surfaceAlt },
+  eventTitle: { color: c.text, fontSize: 13, fontWeight: '600' },
+  eventMeta: { color: c.muted, fontSize: 11, marginTop: 2 },
   sev: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6 },
-  empty: { color: colors.muted, fontSize: 13, textAlign: 'center', padding: spacing.lg },
+  empty: { color: c.muted, fontSize: 13, textAlign: 'center', padding: spacing.lg },
   gameBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -195,10 +200,10 @@ const s = StyleSheet.create({
     padding: spacing.md,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(34,211,238,0.4)',
-    backgroundColor: colors.accentDim,
+    borderColor: `${c.accent}66`,
+    backgroundColor: c.accentDim,
   },
-  gameIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
-  gameTitle: { color: colors.text, fontSize: 14, fontWeight: '800' },
-  gameSub: { color: colors.subtle, fontSize: 12, marginTop: 2 },
+  gameIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center' },
+  gameTitle: { color: c.text, fontSize: 14, fontWeight: '800' },
+  gameSub: { color: c.subtle, fontSize: 12, marginTop: 2 },
 });

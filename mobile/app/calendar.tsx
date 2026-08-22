@@ -6,13 +6,14 @@ import { Screen } from '../src/components/Screen';
 import { Card, Pill, SectionHeader, SeverityDot } from '../src/components/ui';
 import { generatePatchDates, patchDatesInMonth, type PatchDate } from '../src/lib/patch-dates';
 import { shortDate } from '../src/lib/format';
-import { colors } from '../src/theme/colors';
+import { useColors } from '../src/theme/ThemeProvider';
+import type { Palette } from '../src/theme/palettes';
 import { radius, spacing } from '../src/theme/spacing';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-function vendorColor(vendors: string[]): string {
-  return vendors.includes('Oracle') ? colors.high : colors.accent;
+function vendorColor(vendors: string[], c: Palette): string {
+  return vendors.includes('Oracle') ? c.high : c.accent;
 }
 
 function sameDay(a: Date, b: Date): boolean {
@@ -20,6 +21,8 @@ function sameDay(a: Date, b: Date): boolean {
 }
 
 export default function CalendarScreen() {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -78,7 +81,7 @@ export default function CalendarScreen() {
                   </View>
                   <View style={s.dots}>
                     {mark.map((m) => (
-                      <SeverityDot key={m.label} color={vendorColor(m.vendors)} size={5} />
+                      <SeverityDot key={m.label} color={vendorColor(m.vendors, colors)} size={5} />
                     ))}
                   </View>
                 </View>
@@ -113,7 +116,9 @@ export default function CalendarScreen() {
 }
 
 function PatchRow({ item }: { item: PatchDate }) {
-  const color = vendorColor(item.vendors);
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+  const color = vendorColor(item.vendors, colors);
   return (
     <View style={[s.patchRow, item.isPast && s.patchPast, item.isNext && { borderColor: color }]}>
       <SeverityDot color={item.isPast ? colors.muted : color} />
@@ -128,32 +133,32 @@ function PatchRow({ item }: { item: PatchDate }) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   nav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
   navBtn: { padding: 4 },
-  month: { color: colors.text, fontSize: 15, fontWeight: '700' },
+  month: { color: c.text, fontSize: 15, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   cell: { width: `${100 / 7}%`, alignItems: 'center', paddingVertical: 3 },
-  weekday: { color: colors.muted, fontSize: 10, fontWeight: '700' },
+  weekday: { color: c.muted, fontSize: 10, fontWeight: '700' },
   day: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  today: { backgroundColor: colors.accentDim, borderWidth: 1, borderColor: colors.accent },
-  dayText: { color: colors.text, fontSize: 13, fontVariant: ['tabular-nums'] },
-  todayText: { color: colors.accent, fontWeight: '700' },
-  pastText: { color: colors.muted },
+  today: { backgroundColor: c.accentDim, borderWidth: 1, borderColor: c.accent },
+  dayText: { color: c.text, fontSize: 13, fontVariant: ['tabular-nums'] },
+  todayText: { color: c.accent, fontWeight: '700' },
+  pastText: { color: c.muted },
   dots: { flexDirection: 'row', gap: 3, height: 6, marginTop: 2 },
   legend: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: spacing.sm, justifyContent: 'center' },
-  legendText: { color: colors.muted, fontSize: 11, marginRight: spacing.sm },
+  legendText: { color: c.muted, fontSize: 11, marginRight: spacing.sm },
   patchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: radius.md,
     padding: spacing.md,
   },
   patchPast: { opacity: 0.6 },
-  patchLabel: { color: colors.text, fontSize: 14, fontWeight: '600' },
-  patchMeta: { color: colors.muted, fontSize: 12 },
+  patchLabel: { color: c.text, fontSize: 14, fontWeight: '600' },
+  patchMeta: { color: c.muted, fontSize: 12 },
 });

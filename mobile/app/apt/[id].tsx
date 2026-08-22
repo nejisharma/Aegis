@@ -9,7 +9,8 @@ import { useMitre } from '../../src/hooks/useApi';
 import { countryToIso, techniqueBelongsToTactic } from '../../src/lib/mitre';
 import { flagEmoji } from '../../src/lib/format';
 import { openUrl } from '../../src/lib/browser';
-import { colors } from '../../src/theme/colors';
+import { useColors } from '../../src/theme/ThemeProvider';
+import type { Palette } from '../../src/theme/palettes';
 import { spacing } from '../../src/theme/spacing';
 import type { MITREData, MITREGroup, MITRETechnique } from '../../src/api/types';
 
@@ -46,6 +47,8 @@ interface SoftwareRef {
 }
 
 function GroupBody({ group, data }: { group: MITREGroup; data: MITREData }) {
+  const colors = useColors();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const router = useRouter();
   const iso = countryToIso(group.country);
 
@@ -136,7 +139,7 @@ function GroupBody({ group, data }: { group: MITREGroup; data: MITREData }) {
         </View>
       ) : null}
 
-      <Pressable onPress={() => openUrl(group.url)} style={s.link}>
+      <Pressable onPress={() => openUrl(group.url, colors)} style={s.link}>
         <ExternalLink size={14} color={colors.accent} />
         <Text style={s.linkText}>View on MITRE ATT&CK</Text>
       </Pressable>
@@ -144,15 +147,15 @@ function GroupBody({ group, data }: { group: MITREGroup; data: MITREData }) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-  id: { color: colors.accent, fontSize: 13, fontWeight: '700', fontFamily: 'monospace' },
-  country: { color: colors.subtle, fontSize: 13 },
-  name: { color: colors.text, fontSize: 22, fontWeight: '700' },
-  desc: { color: colors.text, fontSize: 14, lineHeight: 21 },
+  id: { color: c.accent, fontSize: 13, fontWeight: '700', fontFamily: 'monospace' },
+  country: { color: c.subtle, fontSize: 13 },
+  name: { color: c.text, fontSize: 22, fontWeight: '700' },
+  desc: { color: c.text, fontSize: 14, lineHeight: 21 },
   stats: { flexDirection: 'row', gap: spacing.sm },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  none: { color: colors.muted, fontSize: 13, paddingHorizontal: spacing.lg },
+  none: { color: c.muted, fontSize: 13, paddingHorizontal: spacing.lg },
   link: {
     marginTop: spacing.xl,
     alignSelf: 'center',
@@ -160,10 +163,10 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderWidth: 1,
-    borderColor: colors.accent,
+    borderColor: c.accent,
     borderRadius: 10,
     paddingHorizontal: 18,
     paddingVertical: 10,
   },
-  linkText: { color: colors.accent, fontWeight: '600' },
+  linkText: { color: c.accent, fontWeight: '600' },
 });
