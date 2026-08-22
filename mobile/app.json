@@ -18,7 +18,7 @@
       "associatedDomains": [
         "applinks:aegis.neeraj.ca"
       ],
-      "appleTeamId": "TEAMID",
+      "appleTeamId": "57CT2U4766",
       "entitlements": {
         "com.apple.security.application-groups": [
           "group.ca.neeraj.aegis"
@@ -107,7 +107,7 @@
       [
         "@bacons/apple-targets",
         {
-          "appleTeamId": "TEAMID"
+          "appleTeamId": "57CT2U4766"
         }
       ]
     ],
