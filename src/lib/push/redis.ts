@@ -20,10 +20,11 @@ let client: Redis | null | undefined;
 /** Returns the Upstash client, or null (with a one-time warning) when env is not configured. */
 export function getRedis(): Redis | null {
   if (client !== undefined) return client;
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Vercel's Upstash integration injects KV_REST_API_URL / KV_REST_API_TOKEN; Upstash's own console uses UPSTASH_REDIS_REST_*.
+  const url = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
   if (!url || !token) {
-    console.warn('[push] UPSTASH_REDIS_REST_URL / TOKEN not set; push features disabled');
+    console.warn('[push] Redis env not set (UPSTASH_REDIS_REST_URL/TOKEN or KV_REST_API_URL/TOKEN); push features disabled');
     client = null;
     return null;
   }

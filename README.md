@@ -88,7 +88,7 @@ The mobile app (see `mobile/`) receives push notifications from a Vercel Cron jo
 
 ```env
 UPSTASH_REDIS_REST_URL=...   # Free at https://upstash.com — stores device tokens and last-seen IDs
-UPSTASH_REDIS_REST_TOKEN=...
+UPSTASH_REDIS_REST_TOKEN=... # (KV_REST_API_URL / KV_REST_API_TOKEN, as injected by Vercel's Upstash integration, work too)
 CRON_SECRET=...              # Any random string; Vercel sends it as `Authorization: Bearer` on cron calls
 ```
 
