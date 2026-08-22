@@ -111,6 +111,30 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "bundleIdentifier": "ca.neeraj.aegis.widget",
+                  "targetName": "AegisWidget",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.ca.neeraj.aegis"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "3a6c3eb2-a5d9-497b-b3a0-9f7a0d5bdb86"
+      }
+    },
+    "owner": "nejisharma"
   }
 }
