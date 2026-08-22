@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import Constants from 'expo-constants';
-import { Bell, BellOff, Bookmark, FileText, Globe, ShieldCheck } from 'lucide-react-native';
+import { Bookmark, FileText, Globe, ShieldCheck } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Screen } from '../../../src/components/Screen';
 import { Segmented } from '../../../src/components/Segmented';
@@ -70,27 +70,34 @@ export default function SettingsScreen() {
       <SectionHeader title="Push notifications" />
       <View style={{ paddingHorizontal: spacing.lg }}>
         <Card>
-          <View style={s.enableRow}>
+          <View style={s.prefRow}>
             <View style={{ flex: 1 }}>
-              <Text style={s.title}>{enabled ? 'Notifications on' : 'Notifications off'}</Text>
+              <Text style={s.title}>Push notifications</Text>
               <Text style={s.desc}>
                 {enabled
                   ? 'This device is registered for alerts.'
-                  : 'Enable to get critical CVE alerts and a news digest. Only an anonymous device token is stored.'}
+                  : 'Critical CVE alerts, news digest and watchlist hits. Only an anonymous device token is stored.'}
               </Text>
-              {status === 'denied' ? <Text style={s.warn}>Permission denied — allow notifications for Aegis in system settings.</Text> : null}
+              {status === 'denied' ? <Text style={s.warn}>Permission denied — allow notifications for Aegis Intel in system settings.</Text> : null}
               {status === 'unsupported' || status === 'error' ? <Text style={s.warn}>{message}</Text> : null}
             </View>
-            <Pressable onPress={enabled ? disable : enable} disabled={busy || enabled === null} style={[s.btn, enabled && s.btnOff]}>
-              {enabled ? <BellOff size={16} color={colors.subtle} /> : <Bell size={16} color={colors.bg} />}
-              <Text style={[s.btnText, enabled && s.btnTextOff]}>{busy ? '…' : enabled ? 'Disable' : 'Enable'}</Text>
-            </Pressable>
+            {busy ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : (
+              <Switch
+                value={!!enabled}
+                onValueChange={(v) => (v ? enable() : disable())}
+                trackColor={{ true: colors.accent, false: colors.border }}
+                thumbColor={colors.text}
+                disabled={enabled === null}
+              />
+            )}
           </View>
         </Card>
 
         <Card style={{ marginTop: spacing.md }}>
           {CATEGORY_META.map((c, i) => (
-            <View key={c.key} style={[s.prefRow, i > 0 && s.prefRowBorder]}>
+            <View key={c.key} style={[s.prefRow, i > 0 && s.prefRowBorder, !enabled && s.dimmed]}>
               <View style={{ flex: 1 }}>
                 <Text style={s.title}>{c.title}</Text>
                 <Text style={s.desc}>{c.description}</Text>
@@ -124,11 +131,13 @@ export default function SettingsScreen() {
 
       <Text style={s.footer}>
         Aegis {version} · Data from NVD, MITRE ATT&CK, abuse.ch, AbuseIPDB, Shodan InternetDB, ip-api, Ransomware.live, OpenPhish and public RSS feeds.
-        Threat map activity is simulated for visualisation. Built by{' '}
+        Threat map activity is simulated for visualisation.
+      </Text>
+      <Text style={s.footerAuthor}>
+        Built by{' '}
         <Text style={s.footerLink} onPress={() => openUrl('https://neeraj.ca', colors)}>
           Neeraj Sharma
         </Text>
-        .
       </Text>
     </Screen>
   );
@@ -147,14 +156,9 @@ function LinkRow({ icon, label, onPress }: { icon: React.ReactNode; label: strin
 
 const makeStyles = (c: Palette) => StyleSheet.create({
   h1: { color: c.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
-  enableRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   title: { color: c.text, fontSize: 14, fontWeight: '600' },
   desc: { color: c.muted, fontSize: 12, marginTop: 2, lineHeight: 16 },
   warn: { color: c.medium, fontSize: 12, marginTop: 6 },
-  btn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.accent, paddingHorizontal: 14, paddingVertical: 9, borderRadius: radius.md },
-  btnOff: { backgroundColor: c.surfaceAlt, borderWidth: 1, borderColor: c.border },
-  btnText: { color: c.bg, fontWeight: '700', fontSize: 13 },
-  btnTextOff: { color: c.subtle },
   prefRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
   prefRowBorder: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.border },
   link: {
@@ -169,6 +173,8 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     paddingVertical: 12,
   },
   linkText: { color: c.text, fontSize: 14 },
-  footer: { color: c.muted, fontSize: 11, lineHeight: 16, padding: spacing.lg, paddingTop: spacing.xl, textAlign: 'center' },
+  footer: { color: c.muted, fontSize: 11, lineHeight: 16, paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.sm, textAlign: 'center' },
   footerLink: { color: c.accent, textDecorationLine: 'underline' },
+  footerAuthor: { color: c.muted, fontSize: 12, textAlign: 'center', paddingBottom: spacing.xl },
+  dimmed: { opacity: 0.45 },
 });
