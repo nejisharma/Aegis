@@ -44,7 +44,7 @@ export default function HomeScreen() {
 
   const header = (
     <View>
-      <ScreenTitle title="Aegis" />
+      <ScreenTitle title="Aegis Intel" />
       <OfflineBanner visible={critical.isOffline} networkError={critical.isNetworkError} />
       <View style={s.statsRow}>
         <StatCard label="Critical" value={stats.critical} color={colors.critical} />

@@ -77,8 +77,8 @@ export function DrawerContent({ navigation }: DrawerContentComponentProps) {
       <View style={s.brand}>
         <Image source={require('../../assets/splash-icon.png')} style={s.brandIcon} resizeMode="contain" />
         <View>
-          <Text style={s.brandName}>AEGIS</Text>
-          <Text style={s.brandSub}>Security Intelligence</Text>
+          <Text style={s.brandName}>AEGIS INTEL</Text>
+          <Text style={s.brandSub}>Threat intelligence, in your pocket</Text>
         </View>
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing.lg }}>
