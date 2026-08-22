@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Plus, X } from 'lucide-react-native';
 import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
@@ -70,8 +70,7 @@ export default function WatchlistScreen() {
   }, [recent.data, terms]);
 
   return (
-    <Screen scroll>
-      <Stack.Screen options={{ title: 'Watchlist' }} />
+    <Screen scroll title="Watchlist">
       <OfflineBanner visible={recent.isOffline} networkError={recent.isNetworkError} />
       <View style={{ padding: spacing.lg, gap: spacing.md }}>
         <Text style={s.lead}>

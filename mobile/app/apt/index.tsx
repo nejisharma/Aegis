@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
 import { SearchBar } from '../../src/components/SearchBar';
@@ -24,8 +24,7 @@ export default function AptTrackerScreen() {
   const groups = useMemo(() => filterGroups(sortGroupsByTechniques(data?.groups ?? []), query), [data, query]);
 
   return (
-    <Screen>
-      <Stack.Screen options={{ title: 'APT Tracker' }} />
+    <Screen title="APT Tracker">
       <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       <SearchBar value={query} onChangeText={setQuery} placeholder="Group, alias or country" />
       {isLoading && !data ? (

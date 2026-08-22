@@ -77,6 +77,7 @@ function ThemedApp({ cache }: { cache: Cache }) {
         <NotificationRouter />
         <Stack
           screenOptions={{
+            headerShown: false,
             headerStyle: { backgroundColor: colors.surface },
             headerTintColor: colors.accent,
             headerTitleStyle: { color: colors.text },

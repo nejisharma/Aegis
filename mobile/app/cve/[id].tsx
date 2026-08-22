@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { shareCve } from '../../src/lib/share';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { ExternalLink, Share2 } from 'lucide-react-native';
 import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
@@ -23,17 +23,15 @@ export default function CveDetailScreen() {
   const item = data?.vulnerabilities.find((v) => v.cve.id === cveId) ?? data?.vulnerabilities[0];
 
   return (
-    <Screen scroll>
-      <Stack.Screen
-        options={{
-          title: cveId,
-          headerRight: () => (
-            <Pressable onPress={() => shareCve(cveId, item ? summarizeCve(item).description.slice(0, 140) : undefined)} hitSlop={10} style={{ paddingHorizontal: 4 }}>
-              <Share2 size={20} color={colors.accent} />
-            </Pressable>
-          ),
-        }}
-      />
+    <Screen
+      scroll
+      title={cveId}
+      headerRight={
+        <Pressable onPress={() => shareCve(cveId, item ? summarizeCve(item).description.slice(0, 140) : undefined)} hitSlop={10} style={{ padding: 8 }}>
+          <Share2 size={20} color={colors.accent} />
+        </Pressable>
+      }
+    >
       <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {isLoading && !item ? (
         <Loading />

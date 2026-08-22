@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 import { VictimDetailSheet } from '../src/components/VictimDetailSheet';
-import { Stack } from 'expo-router';
 import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
 import { Card, EmptyState, KeyValue, OfflineBanner, Pill, SectionHeader, Skeleton, StatCard, UpdatedAt } from '../src/components/ui';
@@ -32,8 +31,7 @@ export default function RansomwareScreen() {
   const { data, error, isLoading, isValidating, isOffline, isNetworkError, updatedAt, mutate } = useRansomware();
 
   return (
-    <Screen scroll refreshControl={<RefreshControl refreshing={!!data && isValidating} onRefresh={() => mutate()} tintColor={colors.accent} />}>
-      <Stack.Screen options={{ title: 'Ransomware' }} />
+    <Screen scroll title="Ransomware" refreshControl={<RefreshControl refreshing={!!data && isValidating} onRefresh={() => mutate()} tintColor={colors.accent} />}>
       <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {data ? <UpdatedAt at={updatedAt} refreshing={isValidating} /> : null}
       {isLoading && !data ? (

@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
-import { Stack } from 'expo-router';
 import { AlertTriangle } from 'lucide-react-native';
 import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
@@ -18,8 +17,7 @@ export default function PhishingScreen() {
   const entries = data?.entries ?? [];
 
   return (
-    <Screen>
-      <Stack.Screen options={{ title: 'Phishing Feed' }} />
+    <Screen title="Phishing Feed">
       <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {data ? <UpdatedAt at={updatedAt} refreshing={isValidating} /> : null}
       <View style={s.warn}>

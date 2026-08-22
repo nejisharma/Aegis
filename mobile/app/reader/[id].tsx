@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { ExternalLink, Share2 } from 'lucide-react-native';
 import { Screen } from '../../src/components/Screen';
 import { EmptyState, Loading } from '../../src/components/ui';
@@ -55,32 +55,29 @@ export default function ReaderScreen() {
   const paragraphs = useMemo(() => (article ? toParagraphs(article.textContent) : []), [article]);
 
   return (
-    <Screen>
-      <Stack.Screen
-        options={{
-          title: article?.source ?? 'Reader',
-          headerRight: () => (
-            <View style={s.headerRow}>
-              <Pressable onPress={() => bump(-2)} hitSlop={8} disabled={fontSize <= FONT_MIN} style={[s.fontBtn, fontSize <= FONT_MIN && { opacity: 0.4 }]} accessibilityLabel="Smaller text">
-                <Text style={s.fontBtnText}>A-</Text>
-              </Pressable>
-              <Pressable onPress={() => bump(2)} hitSlop={8} disabled={fontSize >= FONT_MAX} style={[s.fontBtn, fontSize >= FONT_MAX && { opacity: 0.4 }]} accessibilityLabel="Larger text">
-                <Text style={[s.fontBtnText, { fontSize: 15 }]}>A+</Text>
-              </Pressable>
-              {article ? (
-                <>
-                  <Pressable onPress={() => openUrl(article.url, colors)} hitSlop={8} style={s.iconBtn} accessibilityLabel="Open original">
-                    <ExternalLink size={20} color={colors.accent} />
-                  </Pressable>
-                  <Pressable onPress={() => shareLink(article.title, article.url)} hitSlop={8} style={s.iconBtn} accessibilityLabel="Share">
-                    <Share2 size={20} color={colors.accent} />
-                  </Pressable>
-                </>
-              ) : null}
-            </View>
-          ),
-        }}
-      />
+    <Screen
+      title={article?.source ?? 'Reader'}
+      headerRight={
+        <View style={s.headerRow}>
+      <Pressable onPress={() => bump(-2)} hitSlop={8} disabled={fontSize <= FONT_MIN} style={[s.fontBtn, fontSize <= FONT_MIN && { opacity: 0.4 }]} accessibilityLabel="Smaller text">
+        <Text style={s.fontBtnText}>A-</Text>
+      </Pressable>
+      <Pressable onPress={() => bump(2)} hitSlop={8} disabled={fontSize >= FONT_MAX} style={[s.fontBtn, fontSize >= FONT_MAX && { opacity: 0.4 }]} accessibilityLabel="Larger text">
+        <Text style={[s.fontBtnText, { fontSize: 15 }]}>A+</Text>
+      </Pressable>
+      {article ? (
+        <>
+          <Pressable onPress={() => openUrl(article.url, colors)} hitSlop={8} style={s.iconBtn} accessibilityLabel="Open original">
+            <ExternalLink size={20} color={colors.accent} />
+          </Pressable>
+          <Pressable onPress={() => shareLink(article.title, article.url)} hitSlop={8} style={s.iconBtn} accessibilityLabel="Share">
+            <Share2 size={20} color={colors.accent} />
+          </Pressable>
+        </>
+      ) : null}
+        </View>
+      }
+    >
       {article === undefined ? (
         <Loading />
       ) : article === null ? (

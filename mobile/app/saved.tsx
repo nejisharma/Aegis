@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Trash2 } from 'lucide-react-native';
 import { Screen } from '../src/components/Screen';
 import { EmptyState, Loading } from '../src/components/ui';
@@ -22,8 +22,7 @@ export default function SavedScreen() {
   const { items, loaded, remove } = useSaved();
 
   return (
-    <Screen>
-      <Stack.Screen options={{ title: 'Saved for offline' }} />
+    <Screen title="Saved for offline">
       {!loaded ? (
         <Loading />
       ) : (

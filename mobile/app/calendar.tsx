@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Stack } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { Screen } from '../src/components/Screen';
 import { Card, Pill, SectionHeader, SeverityDot } from '../src/components/ui';
@@ -48,8 +47,7 @@ export default function CalendarScreen() {
   const monthLabel = new Date(year, month, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
   return (
-    <Screen scroll>
-      <Stack.Screen options={{ title: 'Patch Calendar' }} />
+    <Screen scroll title="Patch Calendar">
       <View style={{ padding: spacing.lg, gap: spacing.md }}>
         <Card>
           <View style={s.nav}>

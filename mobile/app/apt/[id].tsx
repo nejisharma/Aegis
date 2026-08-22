@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ExternalLink } from 'lucide-react-native';
 import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
@@ -20,8 +20,7 @@ export default function AptDetailScreen() {
   const group = data?.groups.find((g) => g.id === id);
 
   return (
-    <Screen scroll>
-      <Stack.Screen options={{ title: group?.name ?? id ?? 'APT Group' }} />
+    <Screen scroll title={group?.name ?? id ?? 'APT Group'}>
       <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {isLoading && !data ? (
         <Loading />

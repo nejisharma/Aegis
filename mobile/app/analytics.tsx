@@ -1,6 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Stack } from 'expo-router';
 import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
 import { Donut, HBarChart, Radar, VBarChart, type ChartDatum } from '../src/components/charts';
@@ -85,8 +84,7 @@ export default function AnalyticsScreen() {
   const waiting = <Text style={s.none}>Waiting for threat events…</Text>;
 
   return (
-    <Screen scroll>
-      <Stack.Screen options={{ title: 'Analytics' }} />
+    <Screen scroll title="Analytics">
       <OfflineBanner visible={mitre.isOffline || threatfox.isOffline || malware.isOffline || cves.isOffline} />
       <View style={{ padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl }}>
         <Text style={s.intro}>Live metrics from threat feeds, MITRE ATT&CK &amp; simulated events</Text>

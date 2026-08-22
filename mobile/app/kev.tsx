@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { RefreshControl, StyleSheet, Text, View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
 import { SearchBar } from '../src/components/SearchBar';
@@ -32,8 +32,7 @@ export default function KevScreen() {
   }, [items, query]);
 
   return (
-    <Screen scroll refreshControl={<RefreshControl refreshing={!!data && isValidating} onRefresh={() => mutate()} tintColor={colors.accent} />}>
-      <Stack.Screen options={{ title: 'CISA KEV' }} />
+    <Screen scroll title="CISA KEV" refreshControl={<RefreshControl refreshing={!!data && isValidating} onRefresh={() => mutate()} tintColor={colors.accent} />}>
       <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {data ? <UpdatedAt at={updatedAt} refreshing={isValidating} /> : null}
       {isLoading && !data ? (

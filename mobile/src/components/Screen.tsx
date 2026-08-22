@@ -4,6 +4,7 @@ import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { useColors } from '../theme/ThemeProvider';
 import type { Palette } from '../theme/palettes';
 import { spacing } from '../theme/spacing';
+import { DetailHeader } from './DetailHeader';
 
 interface ScreenProps {
   children: React.ReactNode;
@@ -16,6 +17,10 @@ interface ScreenProps {
   style?: ViewStyle;
   /** Passed to the ScrollView when `scroll` is set (e.g. a RefreshControl). */
   refreshControl?: React.ReactElement<RefreshControlProps>;
+  /** Pushed screens: render our own header (back chevron + title) instead of the native one. */
+  title?: string;
+  /** Right-hand controls for the custom header. */
+  headerRight?: React.ReactNode;
 }
 
 export function Screen({
@@ -25,12 +30,16 @@ export function Screen({
   edges = ['left', 'right', 'bottom'],
   style,
   refreshControl,
+  title,
+  headerRight,
 }: ScreenProps) {
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const inner = padded ? styles.padded : undefined;
+  const safeEdges: Edge[] = title && !edges.includes('top') ? ['top', ...edges] : edges;
   return (
-    <SafeAreaView style={[styles.root, style]} edges={edges}>
+    <SafeAreaView style={[styles.root, style]} edges={safeEdges}>
+      {title !== undefined ? <DetailHeader title={title} right={headerRight} /> : null}
       {scroll ? (
         <ScrollView
           style={styles.root}

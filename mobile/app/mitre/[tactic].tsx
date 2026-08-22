@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
 import { EmptyState, ListRow, OfflineBanner, SeverityDot, Skeleton } from '../../src/components/ui';
@@ -28,8 +28,7 @@ export default function MitreTacticScreen() {
   }, [data, tactic]);
 
   return (
-    <Screen>
-      <Stack.Screen options={{ title: tactic?.name ?? 'Tactic' }} />
+    <Screen title={tactic?.name ?? 'Tactic'}>
       <OfflineBanner visible={isOffline} networkError={isNetworkError} />
       {isLoading && !data ? (
         <Skeleton lines={8} />
