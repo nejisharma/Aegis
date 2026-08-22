@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Dimensions, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
-import { Fish, Mail, MessageSquare, Link2, ShieldCheck, ShieldAlert, Trophy, RotateCcw } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+import * as StoreReview from 'expo-store-review';
+import { DAILY_GOAL, DEFAULT_STREAK, dayKey, effectiveStreak, loadStreak, recordRound, saveStreak, type StreakState } from '../src/lib/streak';
+import { Fish, Flame, Mail, MessageSquare, Link2, ShieldCheck, ShieldAlert, Trophy, RotateCcw } from 'lucide-react-native';
 import { Screen } from '../src/components/Screen';
 import { Pill } from '../src/components/ui';
 import { PHISH_CARDS, type PhishCard, type PhishChannel } from '../src/data/phish-cards';
@@ -14,6 +17,10 @@ const { width: SCREEN_W } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_W * 0.28;
 const SEEN_KEY = 'phish-seen';
 const BEST_KEY = 'phish-best';
+const REVIEW_ASKED_KEY = 'phish-review-asked';
+const REVIEW_AFTER_ROUNDS = 3;
+
+const haptic = (fn: () => Promise<void>) => fn().catch(() => {});
 
 const CHANNEL_META: Record<PhishChannel, { label: string; Icon: typeof Mail }> = {
   email: { label: 'Email', Icon: Mail },
@@ -33,6 +40,7 @@ export default function PhishGameScreen() {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [streak, setStreak] = useState(0);
   const [best, setBest] = useState(0);
+  const [streakState, setStreakState] = useState<StreakState>(DEFAULT_STREAK);
   const seenRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -40,6 +48,7 @@ export default function PhishGameScreen() {
       seenRef.current = new Set(ids);
     });
     getPref<number>(BEST_KEY, 0).then(setBest);
+    loadStreak().then(setStreakState);
   }, []);
 
   const start = useCallback(() => {
@@ -59,6 +68,7 @@ export default function PhishGameScreen() {
     (saidPhish: boolean) => {
       if (!current) return;
       const a = scoreAnswer(current, saidPhish, streak);
+      haptic(() => (a.correct ? Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) : Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)));
       setAnswers((prev) => [...prev, a]);
       setStreak(a.correct ? streak + 1 : 0);
       setPhase('reveal');
@@ -77,20 +87,32 @@ export default function PhishGameScreen() {
         setBest(finalScore);
         setPref(BEST_KEY, finalScore);
       }
+      const nextStreak = recordRound(streakState, dayKey(new Date()));
+      setStreakState(nextStreak);
+      saveStreak(nextStreak);
+      haptic(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success));
       setPhase('done');
+      // Ask for a store review once, after the third completed round, only if the OS supports the in-app prompt.
+      if (nextStreak.totalRounds === REVIEW_AFTER_ROUNDS) {
+        getPref<boolean>(REVIEW_ASKED_KEY, false).then(async (asked) => {
+          if (asked) return;
+          setPref(REVIEW_ASKED_KEY, true);
+          if (await StoreReview.hasAction()) StoreReview.requestReview().catch(() => {});
+        });
+      }
     } else {
       setIndex(index + 1);
       setPhase('playing');
     }
-  }, [index, round, answers, best]);
+  }, [index, round, answers, best, streakState]);
 
   return (
     <Screen>
       <Stack.Screen options={{ title: 'Phish or Not?' }} />
       {phase === 'intro' ? (
-        <Intro best={best} onStart={start} />
+        <Intro best={best} streak={streakState} onStart={start} />
       ) : phase === 'done' ? (
-        <Summary answers={answers} score={score} max={max} best={best} onAgain={start} />
+        <Summary answers={answers} score={score} max={max} best={best} streak={streakState} onAgain={start} />
       ) : current ? (
         <View style={s.playArea}>
           <View style={s.hud}>
@@ -126,9 +148,29 @@ export default function PhishGameScreen() {
   );
 }
 
-function Intro({ best, onStart }: { best: number; onStart: () => void }) {
+function StreakBadge({ streak }: { streak: StreakState }) {
+  const today = dayKey(new Date());
+  const days = effectiveStreak(streak, today);
+  const doneToday = streak.lastDay === today ? streak.roundsToday : 0;
+  return (
+    <View style={s.streakRow}>
+      <View style={s.streakPill}>
+        <Flame size={14} color={days > 0 ? colors.high : colors.muted} />
+        <Text style={[s.streakText, days > 0 && { color: colors.high }]}>{days} day streak</Text>
+      </View>
+      <View style={s.streakPill}>
+        <Text style={s.streakText}>
+          Today {Math.min(doneToday, DAILY_GOAL)}/{DAILY_GOAL} rounds{doneToday >= DAILY_GOAL ? ' ✓' : ''}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function Intro({ best, streak, onStart }: { best: number; streak: StreakState; onStart: () => void }) {
   return (
     <View style={s.center}>
+      <StreakBadge streak={streak} />
       <View style={s.heroIcon}>
         <Fish size={44} color={colors.accent} />
       </View>
@@ -157,6 +199,7 @@ function SwipeCard({ card, disabled, onSwipe }: { card: PhishCard; disabled: boo
     (saidPhish: boolean) => {
       if (swiped.current) return;
       swiped.current = true;
+      haptic(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light));
       Animated.timing(pan, {
         toValue: { x: saidPhish ? -SCREEN_W * 1.3 : SCREEN_W * 1.3, y: 0 },
         duration: 220,
@@ -246,7 +289,7 @@ function Reveal({ answer, last, onNext }: { answer: Answer; last: boolean; onNex
   );
 }
 
-function Summary({ answers, score, max, best, onAgain }: { answers: Answer[]; score: number; max: number; best: number; onAgain: () => void }) {
+function Summary({ answers, score, max, best, streak, onAgain }: { answers: Answer[]; score: number; max: number; best: number; streak: StreakState; onAgain: () => void }) {
   const grade = gradeFor(score, max);
   const correct = answers.filter((a) => a.correct).length;
   const byDiff = (['easy', 'medium', 'hard'] as const).map((d) => {
@@ -264,6 +307,7 @@ function Summary({ answers, score, max, best, onAgain }: { answers: Answer[]; sc
       <Text style={s.best}>
         {correct}/{answers.length} correct{score >= best && score > 0 ? ' · new personal best!' : ` · best ${best}`}
       </Text>
+      <StreakBadge streak={streak} />
       <View style={s.diffRow}>
         {byDiff.map(({ d, ok, n }) => (
           <View key={d} style={s.diffCell}>
@@ -294,6 +338,9 @@ function Summary({ answers, score, max, best, onAgain }: { answers: Answer[]; sc
 }
 
 const s = StyleSheet.create({
+  streakRow: { flexDirection: 'row', gap: spacing.sm },
+  streakPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+  streakText: { color: colors.subtle, fontSize: 12, fontWeight: '700' },
   center: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md },
   heroIcon: { width: 84, height: 84, borderRadius: 42, backgroundColor: colors.accentDim, alignItems: 'center', justifyContent: 'center' },
   h1: { color: colors.text, fontSize: 24, fontWeight: '800', textAlign: 'center' },

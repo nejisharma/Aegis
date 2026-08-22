@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { openUrl } from '../../../src/lib/browser';
+import { shareLink } from '../../../src/lib/share';
+import { Share2 } from 'lucide-react-native';
 import { ErrorState } from '../../../src/components/ErrorState';
 import { Screen } from '../../../src/components/Screen';
 import { ScreenTitle } from '../../../src/components/ScreenTitle';
-import { Chip, EmptyState, OfflineBanner, Skeleton } from '../../../src/components/ui';
+import { Chip, EmptyState, OfflineBanner, Skeleton, UpdatedAt } from '../../../src/components/ui';
 import { useNews } from '../../../src/hooks/useApi';
 import { NEWS_SOURCES } from '../../../src/lib/constants';
 import { timeAgo } from '../../../src/lib/format';
@@ -14,7 +16,7 @@ import type { NewsItem } from '../../../src/api/types';
 
 export default function NewsScreen() {
   const [source, setSource] = useState<string | null>(null);
-  const { data, error, isLoading, isValidating, isOffline, isNetworkError, mutate } = useNews();
+  const { data, error, isLoading, isValidating, isOffline, isNetworkError, updatedAt, mutate } = useNews();
 
   const items = useMemo(() => {
     const all = data?.items ?? [];
@@ -31,6 +33,7 @@ export default function NewsScreen() {
           <Chip key={src} label={src} active={source === src} onPress={() => setSource(src)} />
         ))}
       </ScrollView>
+      {data ? <UpdatedAt at={updatedAt} refreshing={isValidating} /> : null}
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (
@@ -56,7 +59,12 @@ function NewsRow({ item }: { item: NewsItem }) {
         <Text style={s.source}>
           {item.sourceIcon} {item.source}
         </Text>
-        <Text style={s.time}>{timeAgo(item.pubDate)}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Text style={s.time}>{timeAgo(item.pubDate)}</Text>
+          <Pressable onPress={() => shareLink(item.title, item.link)} hitSlop={10}>
+            <Share2 size={14} color={colors.muted} />
+          </Pressable>
+        </View>
       </View>
       <Text style={s.title}>{item.title}</Text>
       {item.description ? (

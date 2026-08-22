@@ -25,6 +25,11 @@ async function ensureAndroidChannels() {
     importance: Notifications.AndroidImportance.HIGH,
     lightColor: '#ef4444',
   });
+  await Notifications.setNotificationChannelAsync('watchlist', {
+    name: 'Watchlist alerts',
+    importance: Notifications.AndroidImportance.HIGH,
+    lightColor: '#f97316',
+  });
   await Notifications.setNotificationChannelAsync('news', {
     name: 'News digest',
     importance: Notifications.AndroidImportance.DEFAULT,
@@ -77,8 +82,16 @@ function friendlyError(err: unknown): string {
 }
 
 /** Persist a pref change locally and on the server (re-registers if the token is unknown to the server). */
-export async function setPushPref(key: keyof PushPrefs, value: boolean): Promise<PushPrefs> {
-  const prefs = { ...(await loadPrefs()), [key]: value };
+export async function setPushPref(key: 'critical_cve' | 'news_digest' | 'watchlist', value: boolean): Promise<PushPrefs> {
+  return savePrefsAndSync({ ...(await loadPrefs()), [key]: value });
+}
+
+/** Replace the watchlist terms locally and on the server. */
+export async function setWatchlistTerms(terms: string[]): Promise<PushPrefs> {
+  return savePrefsAndSync({ ...(await loadPrefs()), watchlist_terms: terms });
+}
+
+async function savePrefsAndSync(prefs: PushPrefs): Promise<PushPrefs> {
   await savePrefs(prefs);
   const token = await loadToken();
   if (token) {

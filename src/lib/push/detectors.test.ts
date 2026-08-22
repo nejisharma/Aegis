@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pickNewCriticalCves, buildDigest } from './detectors';
+import { pickNewCriticalCves, buildDigest, cveMatchesTerm, pickWatchlistHits } from './detectors';
 import type { CVEItem } from '../../types/cve';
 import type { NewsItem } from '../../types/news';
 
@@ -62,4 +62,22 @@ test('buildDigest counts new items when older than 3h', () => {
   assert.equal(d.count, 2);
   assert.equal(d.newest.id, 'a');
   assert.deepEqual(d.newIds, ['a', 'b']);
+});
+
+test('cveMatchesTerm matches words in the description and ids, not substrings of other words', () => {
+  const item = cve('CVE-2026-1', 5);
+  item.cve.descriptions = [{ lang: 'en', value: 'A flaw in Fortinet FortiOS SSL-VPN allows remote code execution.' }];
+  assert.equal(cveMatchesTerm(item, 'fortinet'), true);
+  assert.equal(cveMatchesTerm(item, 'fortios'), true);
+  assert.equal(cveMatchesTerm(item, 'ssl-vpn'), true);
+  assert.equal(cveMatchesTerm(item, 'forti'), false);
+  assert.equal(cveMatchesTerm(item, 'cve-2026-1'), true);
+});
+
+test('pickWatchlistHits returns unseen matches with the term, capped', () => {
+  const a = cve('CVE-1', 5); a.cve.descriptions = [{ lang: 'en', value: 'Apache HTTP Server bug' }];
+  const b = cve('CVE-2', 5); b.cve.descriptions = [{ lang: 'en', value: 'Microsoft Exchange bug' }];
+  const c = cve('CVE-3', 5); c.cve.descriptions = [{ lang: 'en', value: 'Apache Tomcat bug' }];
+  const hits = pickWatchlistHits([a, b, c], ['exchange', 'apache'], new Set(['CVE-3']), 5);
+  assert.deepEqual(hits.map((h) => [h.cve.cve.id, h.term]), [['CVE-1', 'apache'], ['CVE-2', 'exchange']]);
 });

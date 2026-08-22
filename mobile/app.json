@@ -14,7 +14,10 @@
       "supportsTablet": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "associatedDomains": [
+        "applinks:aegis.neeraj.ca"
+      ]
     },
     "android": {
       "package": "ca.neeraj.aegis",
@@ -24,7 +27,29 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png",
         "backgroundColor": "#060a13"
-      }
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "aegis.neeraj.ca",
+              "pathPrefix": "/cve/"
+            },
+            {
+              "scheme": "https",
+              "host": "aegis.neeraj.ca",
+              "pathPrefix": "/news"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/icon.png",
@@ -50,7 +75,8 @@
           "color": "#22d3ee"
         }
       ],
-      "@maplibre/maplibre-react-native"
+      "@maplibre/maplibre-react-native",
+      "./plugins/withReleaseSigning"
     ],
     "experiments": {
       "typedRoutes": true

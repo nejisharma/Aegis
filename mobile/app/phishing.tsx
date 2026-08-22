@@ -3,20 +3,21 @@ import { Stack } from 'expo-router';
 import { AlertTriangle } from 'lucide-react-native';
 import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
-import { EmptyState, ListRow, OfflineBanner, Pill, Skeleton, StatCard } from '../src/components/ui';
+import { EmptyState, ListRow, OfflineBanner, Pill, Skeleton, StatCard, UpdatedAt } from '../src/components/ui';
 import { usePhishing } from '../src/hooks/useApi';
 import { timeAgo } from '../src/lib/format';
 import { colors } from '../src/theme/colors';
 import { spacing } from '../src/theme/spacing';
 
 export default function PhishingScreen() {
-  const { data, error, isLoading, isValidating, isOffline, isNetworkError, mutate } = usePhishing();
+  const { data, error, isLoading, isValidating, isOffline, isNetworkError, updatedAt, mutate } = usePhishing();
   const entries = data?.entries ?? [];
 
   return (
     <Screen>
       <Stack.Screen options={{ title: 'Phishing Feed' }} />
       <OfflineBanner visible={isOffline} networkError={isNetworkError} />
+      {data ? <UpdatedAt at={updatedAt} refreshing={isValidating} /> : null}
       <View style={s.warn}>
         <AlertTriangle size={14} color={colors.medium} />
         <Text style={s.warnText}>Live phishing URLs — do not visit.</Text>

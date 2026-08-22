@@ -357,4 +357,7 @@ export interface VirusTotalResult {
 export interface PushPrefs {
   critical_cve: boolean;
   news_digest: boolean;
+  watchlist: boolean;
+  /** Lower-cased keywords the device wants CVE alerts for (max 20). */
+  watchlist_terms: string[];
 }

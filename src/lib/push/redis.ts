@@ -11,6 +11,7 @@ export const KEYS = {
   devices: 'devices',
   seenCve: 'seen:cve',
   seenNews: 'seen:news',
+  seenWatch: 'seen:watch',
   lastDigest: 'last_digest',
 } as const;
 

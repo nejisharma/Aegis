@@ -68,3 +68,27 @@ describe('scoring', () => {
     expect(gradeFor(0, 100).title).toBe('Patient Zero');
   });
 });
+
+import { DEFAULT_STREAK, effectiveStreak, recordRound } from '../src/lib/streak';
+
+describe('daily streak', () => {
+  it('starts at 1, continues on consecutive days, resets after a gap', () => {
+    let s = recordRound(DEFAULT_STREAK, '2026-08-21');
+    expect(s.days).toBe(1);
+    expect(s.roundsToday).toBe(1);
+    s = recordRound(s, '2026-08-21');
+    expect(s.roundsToday).toBe(2);
+    expect(s.days).toBe(1);
+    s = recordRound(s, '2026-08-22');
+    expect(s.days).toBe(2);
+    expect(s.roundsToday).toBe(1);
+    s = recordRound(s, '2026-08-25');
+    expect(s.days).toBe(1);
+    expect(s.totalRounds).toBe(4);
+  });
+  it('effectiveStreak shows 0 once a day has been missed', () => {
+    const s = recordRound(DEFAULT_STREAK, '2026-08-21');
+    expect(effectiveStreak(s, '2026-08-22')).toBe(1);
+    expect(effectiveStreak(s, '2026-08-23')).toBe(0);
+  });
+});

@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Gamepad2, Pause, Play } from 'lucide-react-native';
 import { Screen } from '../../../src/components/Screen';
 import { ScreenTitle } from '../../../src/components/ScreenTitle';
 import { ThreatMap } from '../../../src/components/ThreatMap';
 import { EventDetailSheet } from '../../../src/components/EventDetailSheet';
-import { CVSSBadge, ListRow, OfflineBanner, SectionHeader, SeverityDot, Skeleton, StatCard } from '../../../src/components/ui';
+import { CVSSBadge, ListRow, OfflineBanner, SectionHeader, SeverityDot, Skeleton, StatCard, UpdatedAt } from '../../../src/components/ui';
 import { useSimulatedThreats } from '../../../src/hooks/useSimulatedThreats';
 import { useRecentCriticalCves } from '../../../src/hooks/useApi';
 import { SEVERITY_COLORS, THREAT_TYPE_LABELS } from '../../../src/lib/constants';
@@ -22,6 +22,9 @@ export default function HomeScreen() {
   const [highlighted, setHighlighted] = useState<string | null>(null);
   const [selected, setSelected] = useState<ThreatEvent | null>(null);
   const critical = useRecentCriticalCves();
+  const { width } = useWindowDimensions();
+  // Tablets / landscape: map on the left, event list on the right.
+  const wide = width >= 768;
 
   const stats = useMemo(() => {
     const bySeverity = { critical: 0, high: 0, medium: 0, low: 0 };
@@ -55,11 +58,26 @@ export default function HomeScreen() {
           {isActive ? <Pause size={16} color={colors.subtle} /> : <Play size={16} color={colors.subtle} />}
         </Pressable>
       </View>
-      <View style={{ paddingHorizontal: spacing.lg }}>
-        <ThreatMap events={events} height={280} highlightedId={highlighted} />
-      </View>
-
-      <SectionHeader title="Recent events" right={<Text style={s.count}>{events.length}</Text>} />
+      {wide ? (
+        <View style={s.wideRow}>
+          <View style={{ flex: 3 }}>
+            <ThreatMap events={events} height={440} highlightedId={highlighted} />
+          </View>
+          <View style={s.wideList}>
+            <SectionHeader title="Recent events" right={<Text style={s.count}>{events.length}</Text>} />
+            {events.slice(0, 8).map((e) => (
+              <EventRow key={e.id} event={e} active={e.id === highlighted} onPress={() => { setHighlighted(e.id); setSelected(e); }} />
+            ))}
+          </View>
+        </View>
+      ) : (
+        <>
+          <View style={{ paddingHorizontal: spacing.lg }}>
+            <ThreatMap events={events} height={280} highlightedId={highlighted} />
+          </View>
+          <SectionHeader title="Recent events" right={<Text style={s.count}>{events.length}</Text>} />
+        </>
+      )}
     </View>
   );
 
@@ -74,7 +92,7 @@ export default function HomeScreen() {
           <Text style={s.gameSub}>Swipe through 10 messages and spot the phishing. Can you beat your best?</Text>
         </View>
       </Pressable>
-      <SectionHeader title="Latest critical CVEs" />
+      <SectionHeader title="Latest critical CVEs" right={<UpdatedAt at={critical.updatedAt} refreshing={critical.isRefreshing} />} />
       {critical.isLoading && !critical.data ? (
         <Skeleton lines={4} />
       ) : criticalCves.length === 0 ? (
@@ -97,7 +115,7 @@ export default function HomeScreen() {
   return (
     <Screen edges={['top', 'left', 'right']}>
       <FlatList
-        data={events.slice(0, 12)}
+        data={wide ? [] : events.slice(0, 12)}
         keyExtractor={(e) => e.id}
         ListHeaderComponent={header}
         ListFooterComponent={footer}
@@ -111,7 +129,8 @@ export default function HomeScreen() {
             }}
           />
         )}
-        ListEmptyComponent={<Text style={s.empty}>{isActive ? 'Waiting for events…' : 'Paused'}</Text>}
+        ListEmptyComponent={wide ? null : <Text style={s.empty}>{isActive ? 'Waiting for events…' : 'Paused'}</Text>}
+        refreshControl={<RefreshControl refreshing={critical.isRefreshing} onRefresh={() => critical.mutate()} tintColor={colors.accent} colors={[colors.accent]} />}
       />
       <EventDetailSheet event={selected} onClose={() => setSelected(null)} />
     </Screen>
@@ -139,6 +158,8 @@ function EventRow({ event, active, onPress }: { event: ThreatEvent; active: bool
 const s = StyleSheet.create({
   h1: { color: colors.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   statsRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  wideRow: { flexDirection: 'row', gap: spacing.md, paddingHorizontal: spacing.lg, alignItems: 'flex-start' },
+  wideList: { flex: 2, backgroundColor: colors.surface, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, overflow: 'hidden' },
   mapHeader: {
     flexDirection: 'row',
     alignItems: 'center',

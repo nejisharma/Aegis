@@ -3,7 +3,7 @@ import { useAnimatedCounter } from '../../../src/hooks/useAnimatedCounter';
 import { useMitre } from '../../../src/hooks/useApi';
 import { StatCard } from '../../../src/components/ui';
 import { useRouter, type Href } from 'expo-router';
-import { BarChart3, Bug, Calendar, Crosshair, Fish, Gamepad2, Lock, Shield } from 'lucide-react-native';
+import { BarChart3, Bookmark, Bug, Calendar, Crosshair, Fish, Gamepad2, Lock, Shield } from 'lucide-react-native';
 import { Screen } from '../../../src/components/Screen';
 import { ScreenTitle } from '../../../src/components/ScreenTitle';
 import { AdSlot } from '../../../src/components/ui';
@@ -11,6 +11,7 @@ import { colors } from '../../../src/theme/colors';
 import { radius, spacing } from '../../../src/theme/spacing';
 
 const SECTIONS: { href: Href; title: string; subtitle: string; Icon: typeof Shield; color: string }[] = [
+  { href: '/watchlist', title: 'My Watchlist', subtitle: 'CVE alerts for the products you care about', Icon: Bookmark, color: colors.accent },
   { href: '/apt', title: 'APT Tracker', subtitle: 'MITRE ATT&CK groups, TTPs, targets', Icon: Crosshair, color: colors.critical },
   { href: '/mitre', title: 'MITRE ATT&CK', subtitle: 'Tactics → techniques, colored by APT use', Icon: Shield, color: colors.accent },
   { href: '/ransomware', title: 'Ransomware', subtitle: 'Active groups and recent victims', Icon: Lock, color: colors.high },

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { mutate as swrMutate } from 'swr';
 import { useRouter } from 'expo-router';
 import { ErrorState } from '../../../src/components/ErrorState';
 import { Screen } from '../../../src/components/Screen';
@@ -28,6 +29,7 @@ export default function SearchScreen() {
   const [mode, setMode] = useState<Mode>('cve');
   const [query, setQuery] = useState('');
   const [submitted, setSubmitted] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
   const debounced = useDebounced(query, 600);
   // CVE / Exploits search as you type (like the website); IOC / IP only on Enter or the Look up button.
   const explicit = mode === 'ioc' || mode === 'ip';
@@ -55,7 +57,24 @@ export default function SearchScreen() {
           <Text style={s.lookupText}>Look up</Text>
         </Pressable>
       ) : null}
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: spacing.xl }}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: spacing.xl }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            tintColor={colors.accent}
+            colors={[colors.accent]}
+            onRefresh={async () => {
+              if (!effective) return;
+              setRefreshing(true);
+              // Revalidate every cached query for the current mode/term.
+              await swrMutate((key) => typeof key === 'string' && key.includes(`:${effective}`), undefined, { revalidate: true });
+              setRefreshing(false);
+            }}
+          />
+        }
+      >
         {mode === 'cve' && <CveResults keyword={effective} />}
         {mode === 'ioc' && <IocResults query={effective} />}
         {mode === 'ip' && <IpResults ip={effective} />}

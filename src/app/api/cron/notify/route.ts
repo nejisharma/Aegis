@@ -4,7 +4,7 @@ import { API_URLS } from '@/lib/constants';
 import type { NVDResponse } from '@/types/cve';
 import type { NewsItem } from '@/types/news';
 import { addSeen, getDevices, getRedis, getSeen, KEYS, removeDevices } from '@/lib/push/redis';
-import { buildDigest, cveSummary, pickNewCriticalCves } from '@/lib/push/detectors';
+import { buildDigest, cveSummary, pickNewCriticalCves, pickWatchlistHits } from '@/lib/push/detectors';
 import { sendPush } from '@/lib/push/expo-push';
 import type { PushCategory } from '@/lib/push/types';
 
@@ -16,13 +16,13 @@ function isAuthorized(request: NextRequest): boolean {
   return request.headers.get('authorization') === `Bearer ${secret}`;
 }
 
-async function fetchRecentCriticalCves(): Promise<NVDResponse['vulnerabilities']> {
+async function fetchRecentCves(severity?: 'CRITICAL'): Promise<NVDResponse['vulnerabilities']> {
   const end = new Date();
   const start = new Date(end.getTime() - 2 * 60 * 60 * 1000);
   const url =
-    `${API_URLS.NVD_CVE}?cvssV3Severity=CRITICAL` +
+    `${API_URLS.NVD_CVE}?${severity ? `cvssV3Severity=${severity}` : 'noRejected'}` +
     `&pubStartDate=${encodeURIComponent(start.toISOString())}` +
-    `&pubEndDate=${encodeURIComponent(end.toISOString())}&resultsPerPage=50`;
+    `&pubEndDate=${encodeURIComponent(end.toISOString())}&resultsPerPage=${severity ? 50 : 200}`;
   const res = await fetch(url, {
     headers: { 'User-Agent': 'AEGIS-Dashboard/1.0' },
     signal: AbortSignal.timeout(20000),
@@ -51,13 +51,13 @@ export async function GET(request: NextRequest) {
       .filter(([, d]) => d.prefs[cat])
       .map(([t]) => t);
 
-  const result = { cve: 0, digest: false, pruned: 0, errors: [] as string[] };
+  const result = { cve: 0, digest: false, watchlist: 0, pruned: 0, errors: [] as string[] };
   const invalid = new Set<string>();
 
   // (a) Critical CVEs: one push per CVE, immediately.
   try {
     const cveTokens = tokensFor('critical_cve');
-    const vulns = await fetchRecentCriticalCves();
+    const vulns = await fetchRecentCves('CRITICAL');
     const seen = await getSeen(redis, KEYS.seenCve);
     const fresh = pickNewCriticalCves(vulns, seen);
     if (fresh.length) {
@@ -80,6 +80,39 @@ export async function GET(request: NextRequest) {
     }
   } catch (err) {
     result.errors.push(`cve: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  // (c) Watchlist: any new CVE (any severity) mentioning a term a device watches.
+  try {
+    const watchers = Object.entries(devices).filter(([, d]) => d.prefs.watchlist && d.prefs.watchlist_terms?.length);
+    if (watchers.length) {
+      const vulns = await fetchRecentCves();
+      const seen = await getSeen(redis, KEYS.seenWatch);
+      const messages: ExpoPushMessage[] = [];
+      const notified = new Set<string>();
+      for (const [to, d] of watchers) {
+        for (const hit of pickWatchlistHits(vulns, d.prefs.watchlist_terms, seen, 5)) {
+          notified.add(hit.cve.cve.id);
+          messages.push({
+            to,
+            sound: 'default' as const,
+            title: `Watchlist · ${hit.term}: ${hit.cve.cve.id}`,
+            body: cveSummary(hit.cve),
+            data: { url: `aegis://cve/${hit.cve.cve.id}` },
+            channelId: 'watchlist',
+          });
+        }
+      }
+      if (messages.length) {
+        const r = await sendPush(messages);
+        r.invalidTokens.forEach((t) => invalid.add(t));
+      }
+      // Every CVE in this window is now "seen" for watchlist purposes, so a term added later does not replay old CVEs.
+      await addSeen(redis, KEYS.seenWatch, vulns.map((v) => v.cve.id));
+      result.watchlist = notified.size;
+    }
+  } catch (err) {
+    result.errors.push(`watchlist: ${err instanceof Error ? err.message : String(err)}`);
   }
 
   // (b) News digest: batched, at most every 3 h.

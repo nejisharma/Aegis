@@ -8,10 +8,31 @@ import { detectIocType, type IocType } from '../lib/ioc';
  * Thin wrapper: the SWR key is a descriptive string so the persisted cache survives restarts,
  * and `fetcher` ignores the key. `isOffline` is true when the fetch failed but cached data exists.
  */
+/** Last successful fetch time per key (in-memory; persisted cache entries show "cached" until refreshed). */
+const fetchedAt = new Map<string, number>();
+export const lastFetchedAt = (key: string | null) => (key ? fetchedAt.get(key) ?? null : null);
+
 function useQuery<T>(key: string | null, fetcher: () => Promise<T>, config?: SWRConfiguration<T>) {
-  const swr = useSWR<T>(key, key ? () => fetcher() : null, { errorRetryCount: 2, ...config });
+  const swr = useSWR<T>(
+    key,
+    key
+      ? async () => {
+          const result = await fetcher();
+          fetchedAt.set(key, Date.now());
+          return result;
+        }
+      : null,
+    { errorRetryCount: 2, ...config },
+  );
   const isOffline = !!swr.error && swr.data !== undefined;
-  return { ...swr, isOffline, isNetworkError: swr.error instanceof ApiError && swr.error.status === 0 };
+  return {
+    ...swr,
+    isOffline,
+    isNetworkError: swr.error instanceof ApiError && swr.error.status === 0,
+    updatedAt: lastFetchedAt(key),
+    /** True while a background revalidation is running and we already have data (pull-to-refresh spinner). */
+    isRefreshing: swr.isValidating && swr.data !== undefined,
+  };
 }
 
 export const useNews = (source?: string) => useQuery(`news:${source ?? 'all'}`, () => ep.getNews(source), { refreshInterval: 15 * 60_000 });

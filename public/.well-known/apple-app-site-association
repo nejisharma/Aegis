@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.ca.neeraj.aegis",
+        "paths": ["/cve/*", "/news"]
+      }
+    ]
+  }
+}

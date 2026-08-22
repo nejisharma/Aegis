@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import Constants from 'expo-constants';
-import { Bell, BellOff, FileText, Globe, ShieldCheck } from 'lucide-react-native';
+import { Bell, BellOff, Bookmark, FileText, Globe, ShieldCheck } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { Screen } from '../../../src/components/Screen';
 import { ScreenTitle } from '../../../src/components/ScreenTitle';
 import { Card, SectionHeader } from '../../../src/components/ui';
@@ -14,6 +15,7 @@ import { radius, spacing } from '../../../src/theme/spacing';
 import type { PushPrefs } from '../../../src/api/types';
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const [prefs, setPrefs] = useState<PushPrefs>(DEFAULT_PREFS);
   const [enabled, setEnabled] = useState<boolean | null>(null);
   const [status, setStatus] = useState<RegisterStatus | null>(null);
@@ -42,7 +44,7 @@ export default function SettingsScreen() {
     setBusy(false);
   }, []);
 
-  const toggle = useCallback(async (key: keyof PushPrefs, value: boolean) => {
+  const toggle = useCallback(async (key: 'critical_cve' | 'news_digest' | 'watchlist', value: boolean) => {
     setPrefs((p) => ({ ...p, [key]: value }));
     const saved = await setPushPref(key, value);
     setPrefs(saved);
@@ -92,6 +94,11 @@ export default function SettingsScreen() {
             </View>
           ))}
         </Card>
+      </View>
+
+      <SectionHeader title="Watchlist" />
+      <View style={{ paddingHorizontal: spacing.lg }}>
+        <LinkRow icon={<Bookmark size={16} color={colors.accent} />} label="Manage watchlist terms" onPress={() => router.push('/watchlist')} />
       </View>
 
       <SectionHeader title="About" />

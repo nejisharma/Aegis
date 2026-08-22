@@ -4,6 +4,7 @@ import { usePathname, useRouter, type Href } from 'expo-router';
 import type { DrawerContentComponentProps } from 'expo-router/drawer';
 import {
   BarChart3,
+  Bookmark,
   Bug,
   Calendar,
   Crosshair,
@@ -28,6 +29,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
       { href: '/', label: 'Home · Threat Map', Icon: Globe, match: '/' },
       { href: '/news', label: 'Security News', Icon: Newspaper, match: '/news' },
       { href: '/search', label: 'Search (CVE · IOC · IP · Exploits)', Icon: Search, match: '/search' },
+      { href: '/watchlist', label: 'My Watchlist', Icon: Bookmark, match: '/watchlist' },
     ],
   },
   {

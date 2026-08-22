@@ -4,6 +4,7 @@ import { ChevronRight, WifiOff } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { radius, spacing } from '../theme/spacing';
 import { severityColor, type Severity } from '../lib/cvss';
+import { timeAgo } from '../lib/format';
 
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
   return <View style={[s.card, style]}>{children}</View>;
@@ -150,6 +151,15 @@ export function KeyValue({ label, value, mono }: { label: string; value: ReactNo
   );
 }
 
+/** "Updated 3m ago" line under a feed so cached data is not mistaken for live. */
+export function UpdatedAt({ at, refreshing }: { at: number | null | undefined; refreshing?: boolean }) {
+  return (
+    <Text style={s.updatedAt}>
+      {refreshing ? 'Refreshing…' : at ? `Updated ${timeAgo(at)}` : 'Showing cached data'}
+    </Text>
+  );
+}
+
 /** Reserved slot for a future ad placement. Intentionally renders nothing in v1. */
 export function AdSlot(_props: { placement: string }) {
   return null;
@@ -244,6 +254,7 @@ const s = StyleSheet.create({
     paddingVertical: 6,
   },
   offlineText: { color: colors.medium, fontSize: 12, fontWeight: '600' },
+  updatedAt: { color: colors.muted, fontSize: 11, paddingHorizontal: spacing.lg, paddingBottom: 4 },
   kv: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, paddingVertical: 6 },
   kvLabel: { color: colors.muted, fontSize: 12, flexShrink: 0 },
   kvValue: { color: colors.text, fontSize: 13, flex: 1, textAlign: 'right' },

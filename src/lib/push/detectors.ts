@@ -49,3 +49,30 @@ export function buildDigest(
   }
   return { count: fresh.length, newest: fresh[0], newIds: fresh.map((i) => i.id) };
 }
+
+/** Case-insensitive whole-word-ish match of a watchlist term in the CVE id, description or CPE-like references. */
+export function cveMatchesTerm(item: CVEItem, term: string): boolean {
+  const t = term.toLowerCase();
+  if (item.cve.id.toLowerCase().includes(t)) return true;
+  const text = item.cve.descriptions.map((d) => d.value).join(' ').toLowerCase();
+  const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(text);
+}
+
+export interface WatchHit {
+  cve: CVEItem;
+  term: string;
+}
+
+/** For each unseen CVE, the first watchlist term it matches. */
+export function pickWatchlistHits(vulns: CVEItem[], terms: string[], seen: Set<string>, max = 10): WatchHit[] {
+  const out: WatchHit[] = [];
+  if (!terms.length) return out;
+  for (const v of vulns) {
+    if (out.length >= max) break;
+    if (seen.has(v.cve.id)) continue;
+    const term = terms.find((t) => cveMatchesTerm(v, t));
+    if (term) out.push({ cve: v, term });
+  }
+  return out;
+}

@@ -10,10 +10,12 @@ import { createPersistedCacheProvider, hydrateCache } from '../src/lib/storage';
 import { useNotificationRouting } from '../src/notifications/handlers';
 import { loadToken } from '../src/notifications/prefs';
 import { registerForPush } from '../src/notifications/register';
+import { initMonitoring, wrapRoot } from '../src/lib/monitoring';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+initMonitoring();
 
-export default function RootLayout() {
+function RootLayout() {
   const [cache, setCache] = useState<Cache | null>(null);
 
   useEffect(() => {
@@ -76,3 +78,5 @@ function NotificationRouter() {
   useNotificationRouting();
   return null;
 }
+
+export default wrapRoot(RootLayout);

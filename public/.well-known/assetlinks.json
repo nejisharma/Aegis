@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ca.neeraj.aegis",
+      "sha256_cert_fingerprints": ["15:BE:9C:60:A3:19:E7:7A:FE:C3:E9:86:AA:6E:E2:D5:20:BE:98:44:0B:A7:45:AA:E0:64:78:29:4C:CE:3B:CB"]
+    }
+  }
+]

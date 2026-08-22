@@ -3,7 +3,7 @@ import { RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
-import { Card, EmptyState, KeyValue, OfflineBanner, Pill, SectionHeader, Skeleton, StatCard } from '../src/components/ui';
+import { Card, EmptyState, KeyValue, OfflineBanner, Pill, SectionHeader, Skeleton, StatCard, UpdatedAt } from '../src/components/ui';
 import { useRansomware } from '../src/hooks/useApi';
 import { flagEmoji, timeAgo } from '../src/lib/format';
 import { countryToIso } from '../src/lib/mitre';
@@ -25,12 +25,13 @@ function statusColor(status: string): string {
 }
 
 export default function RansomwareScreen() {
-  const { data, error, isLoading, isValidating, isOffline, isNetworkError, mutate } = useRansomware();
+  const { data, error, isLoading, isValidating, isOffline, isNetworkError, updatedAt, mutate } = useRansomware();
 
   return (
     <Screen scroll refreshControl={<RefreshControl refreshing={!!data && isValidating} onRefresh={() => mutate()} tintColor={colors.accent} />}>
       <Stack.Screen options={{ title: 'Ransomware' }} />
       <OfflineBanner visible={isOffline} networkError={isNetworkError} />
+      {data ? <UpdatedAt at={updatedAt} refreshing={isValidating} /> : null}
       {isLoading && !data ? (
         <Skeleton lines={8} />
       ) : error && !data ? (
