@@ -6,10 +6,12 @@ import type { DrawerContentComponentProps } from 'expo-router/drawer';
 import {
   BarChart3,
   Bookmark,
+  BookmarkCheck,
   Bug,
   Calendar,
   Crosshair,
   Fish,
+  Flame,
   Gamepad2,
   Globe,
   Lock,
@@ -30,6 +32,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     items: [
       { href: '/', label: 'Home · Threat Map', Icon: Globe, match: '/' },
       { href: '/news', label: 'Security News', Icon: Newspaper, match: '/news' },
+      { href: '/saved', label: 'Saved articles', Icon: BookmarkCheck, match: '/saved' },
       { href: '/search', label: 'Search (CVE · IOC · IP · Exploits)', Icon: Search, match: '/search' },
       { href: '/watchlist', label: 'My Watchlist', Icon: Bookmark, match: '/watchlist' },
     ],
@@ -38,6 +41,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     title: 'Intelligence',
     items: [
       { href: '/apt', label: 'APT Tracker', Icon: Crosshair, match: '/apt' },
+      { href: '/kev', label: 'CISA KEV', Icon: Flame, match: '/kev' },
       { href: '/mitre', label: 'MITRE ATT&CK', Icon: Shield, match: '/mitre' },
       { href: '/ransomware', label: 'Ransomware', Icon: Lock, match: '/ransomware' },
       { href: '/malware', label: 'Malware Bazaar', Icon: Bug, match: '/malware' },

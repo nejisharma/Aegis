@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AegisLogo } from '@/components/ui/AegisLogo';
 import { API_URLS } from '@/lib/constants';
+import { nvdHeaders } from '@/lib/nvd';
 import type { NVDResponse } from '@/types/cve';
 
 type Params = { params: Promise<{ id: string }> };
@@ -11,12 +12,55 @@ const CVE_RE = /^CVE-\d{4}-\d{4,}$/i;
 
 async function fetchCve(id: string) {
   const res = await fetch(`${API_URLS.NVD_CVE}?cveId=${encodeURIComponent(id)}`, {
-    headers: { 'User-Agent': 'AEGIS-Dashboard/1.0' },
+    headers: nvdHeaders(),
     next: { revalidate: 3600 },
   });
   if (!res.ok) return null;
   const data = (await res.json()) as NVDResponse;
   return data.vulnerabilities?.[0] ?? null;
+}
+
+interface EpssScore {
+  epss: number;
+  percentile: number;
+}
+
+interface KevEntry {
+  cveID: string;
+  dateAdded: string;
+  dueDate: string;
+  knownRansomwareCampaignUse: 'Known' | 'Unknown';
+}
+
+/** FIRST EPSS exploit-probability score; null when unavailable (failures just hide the row). */
+async function fetchEpss(id: string): Promise<EpssScore | null> {
+  try {
+    const res = await fetch(`${API_URLS.EPSS}?cve=${encodeURIComponent(id)}`, {
+      headers: { 'User-Agent': 'AEGIS-Dashboard/1.0' },
+      next: { revalidate: 21600 },
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { data?: Array<{ cve: string; epss: string; percentile: string }> };
+    const row = body.data?.find((r) => r.cve.toUpperCase() === id);
+    if (!row) return null;
+    const epss = Number(row.epss);
+    const percentile = Number(row.percentile);
+    return Number.isNaN(epss) || Number.isNaN(percentile) ? null : { epss, percentile };
+  } catch {
+    return null;
+  }
+}
+
+/** CISA KEV catalog entry for this CVE; null when not listed or the feed is unavailable. */
+async function fetchKev(id: string): Promise<KevEntry | null> {
+  try {
+    const res = await fetch(API_URLS.KEV, { headers: { 'User-Agent': 'AEGIS-Dashboard/1.0' }, next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    const feed = (await res.json()) as { vulnerabilities?: KevEntry[] };
+    return feed.vulnerabilities?.find((v) => v.cveID.toUpperCase() === id) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
@@ -32,7 +76,7 @@ export default async function CvePage({ params }: Params) {
   const { id: raw } = await params;
   const id = raw.toUpperCase();
   if (!CVE_RE.test(id)) notFound();
-  const item = await fetchCve(id);
+  const [item, epss, kev] = await Promise.all([fetchCve(id), fetchEpss(id), fetchKev(id)]);
   const metric = item?.cve.metrics?.cvssMetricV31?.[0]?.cvssData;
   const description = item?.cve.descriptions.find((d) => d.lang === 'en')?.value ?? item?.cve.descriptions[0]?.value;
   const color =
@@ -67,6 +111,24 @@ export default async function CvePage({ params }: Params) {
               <dd>{new Date(item.cve.lastModified).toLocaleDateString()}</dd>
               <dt className="text-slate-500">Status</dt>
               <dd>{item.cve.vulnStatus}</dd>
+              {epss ? (
+                <>
+                  <dt className="text-slate-500">EPSS</dt>
+                  <dd title="Probability of exploitation in the next 30 days (FIRST EPSS)">
+                    {(epss.epss * 100).toFixed(epss.epss < 0.01 ? 2 : 1)}% · top {Math.max(1, Math.round((1 - epss.percentile) * 100))}% of all CVEs
+                  </dd>
+                </>
+              ) : null}
+              {kev ? (
+                <>
+                  <dt className="text-slate-500">CISA KEV</dt>
+                  <dd>
+                    <span className="mr-2 rounded border border-red-500/40 bg-red-500/15 px-1.5 py-0.5 text-xs font-bold text-red-400">KEV</span>
+                    Added {new Date(kev.dateAdded).toLocaleDateString()} · patch by {new Date(kev.dueDate).toLocaleDateString()}
+                    {kev.knownRansomwareCampaignUse === 'Known' ? ' · Known ransomware use' : ''}
+                  </dd>
+                </>
+              ) : null}
               {metric ? (
                 <>
                   <dt className="text-slate-500">Attack vector</dt>

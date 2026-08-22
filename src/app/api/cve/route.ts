@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { API_URLS } from '@/lib/constants';
+import { nvdHeaders } from '@/lib/nvd';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     if (['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(severity)) params.set('cvssV3Severity', severity);
     const url = `${API_URLS.NVD_CVE}?${params.toString()}`;
     const upstream = await fetch(url, {
-      headers: { 'User-Agent': 'AEGIS-Dashboard/1.0' },
+      headers: nvdHeaders(),
     });
 
     if (upstream.status === 404) {

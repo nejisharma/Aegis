@@ -8,7 +8,8 @@ import { ThreatMap } from '../../../src/components/ThreatMap';
 import { EventDetailSheet } from '../../../src/components/EventDetailSheet';
 import { CVSSBadge, ListRow, OfflineBanner, SectionHeader, SeverityDot, Skeleton, StatCard, UpdatedAt } from '../../../src/components/ui';
 import { useSimulatedThreats } from '../../../src/hooks/useSimulatedThreats';
-import { useRecentCriticalCves } from '../../../src/hooks/useApi';
+import { useKevIds, useRecentCriticalCves } from '../../../src/hooks/useApi';
+import { KevBadge } from '../../../src/components/ExploitBadges';
 import { SEVERITY_COLORS, THREAT_TYPE_LABELS } from '../../../src/lib/constants';
 import { summarizeCve } from '../../../src/lib/cvss';
 import { timeAgo, truncate } from '../../../src/lib/format';
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const [highlighted, setHighlighted] = useState<string | null>(null);
   const [selected, setSelected] = useState<ThreatEvent | null>(null);
   const critical = useRecentCriticalCves();
+  const { ids: kevIds } = useKevIds();
   const { width } = useWindowDimensions();
   // Tablets / landscape: map on the left, event list on the right.
   const wide = width >= 768;
@@ -106,7 +108,12 @@ export default function HomeScreen() {
             key={c.id}
             title={c.id}
             subtitle={truncate(c.description, 110)}
-            right={<CVSSBadge score={c.score} severity={c.severity} />}
+            right={
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                {kevIds.has(c.id) ? <KevBadge /> : null}
+                <CVSSBadge score={c.score} severity={c.severity} />
+              </View>
+            }
             onPress={() => router.push({ pathname: '/cve/[id]', params: { id: c.id } })}
           />
         ))

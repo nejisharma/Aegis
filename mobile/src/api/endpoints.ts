@@ -1,6 +1,10 @@
 import { api, ApiError, postJson, patchJson, deleteJson } from './client';
 import type {
   AbuseIpdbResult,
+  ArticleResponse,
+  EpssResponse,
+  KevIdsResponse,
+  KevResponse,
   ExploitsResponse,
   GeoIPResult,
   MITREData,
@@ -69,6 +73,14 @@ async function recentCvesByYear(severity: string | undefined, limit: number): Pr
   return { ...page, vulnerabilities: items.slice(0, limit) };
 }
 
+// EPSS (FIRST) — GET ?cve=CVE-1,CVE-2 (max 100)
+export const getEpss = (ids: string[]) =>
+  api<EpssResponse>(`/api/epss${q({ cve: ids.slice(0, 100).join(',') })}`);
+
+// CISA KEV — GET ?limit= | ?ids=1
+export const getKev = (limit = 200) => api<KevResponse>(`/api/kev${q({ limit })}`);
+export const getKevIds = () => api<KevIdsResponse>('/api/kev?ids=1');
+
 // IP intel — GET ?ip=
 export const getGeoIp = (ip: string) => api<GeoIPResult>(`/api/geoip${q({ ip })}`);
 export const getShodan = (ip: string) => api<ShodanInternetDB>(`/api/shodan${q({ ip })}`);
@@ -125,3 +137,7 @@ export const updatePushPrefs = (body: { token: string; prefs: PushPrefs }) =>
   patchJson<{ ok: true }>('/api/push/prefs', body);
 export const unregisterPush = (token: string) =>
   deleteJson<{ ok: true }>('/api/push/prefs', { token });
+
+// Article extraction — GET ?url= (allow-listed news hosts only)
+export const getArticle = (url: string) =>
+  api<ArticleResponse>(`/api/article${q({ url })}`, { timeoutMs: 20_000 });

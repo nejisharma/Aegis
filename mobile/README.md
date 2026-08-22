@@ -67,3 +67,18 @@ Built on Codemagic (`codemagic.yaml`, workflow `ios-testflight`) because this ma
 ## Ads
 
 None in v1 by decision. `AdSlot` in `src/components/ui.tsx` is the single seam; screens already render `<AdSlot placement="…" />` where a banner could go.
+
+## Widgets
+
+A home-screen widget **"Aegis · Critical CVEs"** shows the 3 newest CVSS-critical CVEs of the last 7 days (id, CVSS, one-line summary) plus how many recent CVEs hit the user's watchlist terms. Tapping a row opens `aegis://cve/<ID>`; tapping elsewhere opens the app.
+
+Shared code lives in `src/widgets/`:
+
+- `data.ts` — `WidgetPayload` type, `buildWidgetPayload()` (network), watchlist term matching, `writeWidgetPayload()` / `readWidgetPayload()` (AsyncStorage; on iOS also mirrored into the App Group `UserDefaults` through `ExtensionStorage` from `@bacons/apple-targets`).
+- `refresh.ts` — `refreshWidgets()`, called from `app/_layout.tsx` on every launch once the cache is hydrated.
+
+**Android** (`react-native-android-widget`): `CriticalCveWidget.tsx` is the Flex/Text widget tree, `widgetTaskHandler.ts` is the headless task (paints the cached payload, fetches, repaints). It is registered in the custom entry `index.ts` (`package.json` → `"main": "./index.ts"`, which still imports `expo-router/entry`). The widget is declared in `app.json` under the `react-native-android-widget` plugin (`name: CriticalCve`, 4×2 cells, `updatePeriodMillis: 1800000` = 30 min system refresh, preview `assets/widget-preview.png`). Requires a prebuild (`expo run:android`).
+
+**iOS** (`@bacons/apple-targets`): `targets/widget/` holds `expo-target.config.js` (type `widget`, App Group `group.ca.neeraj.aegis`, colors), `Info.plist` and `Widget.swift` (WidgetKit `TimelineProvider` reading the JSON payload from the App Group, small + medium families, `Link`/`widgetURL` deep links). `app.json` declares `ios.entitlements["com.apple.security.application-groups"]` and the plugin. **Replace the `TEAMID` placeholder** (`ios.appleTeamId` and the `@bacons/apple-targets` plugin option in `app.json`) with the real Apple Team ID before building.
+
+**iOS is untested** — this machine is Windows, so the Swift target has never been compiled. Verify on the Codemagic `ios-testflight` workflow or in Xcode (`npx expo prebuild -p ios --clean`, then open the `expo:targets/widget` group).

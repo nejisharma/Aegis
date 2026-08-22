@@ -100,3 +100,18 @@ describe('format', () => {
     expect(flagEmoji(null)).toBe('');
   });
 });
+
+import { pushHistory } from '../src/lib/history';
+
+describe('search history', () => {
+  it('de-duplicates case-insensitively, newest first, capped', () => {
+    let h = pushHistory([], 'log4j');
+    h = pushHistory(h, 'apache');
+    h = pushHistory(h, 'Log4j');
+    expect(h).toEqual(['Log4j', 'apache']);
+    for (let i = 0; i < 15; i++) h = pushHistory(h, `t${i}`);
+    expect(h).toHaveLength(10);
+    expect(h[0]).toBe('t14');
+    expect(pushHistory(h, '   ')).toEqual(h);
+  });
+});

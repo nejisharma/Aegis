@@ -1,6 +1,9 @@
 import { useState, useMemo } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { mutate as swrMutate } from 'swr';
+import { useEffect } from 'react';
+import { Clock, X } from 'lucide-react-native';
+import { useSearchHistory } from '../../../src/lib/history';
 import { useRouter } from 'expo-router';
 import { ErrorState } from '../../../src/components/ErrorState';
 import { Screen } from '../../../src/components/Screen';
@@ -8,7 +11,8 @@ import { ScreenTitle } from '../../../src/components/ScreenTitle';
 import { SearchBar } from '../../../src/components/SearchBar';
 import { Segmented } from '../../../src/components/Segmented';
 import { CVSSBadge, Card, EmptyState, KeyValue, ListRow, Loading, Pill, SectionHeader } from '../../../src/components/ui';
-import { useAbuseIpdb, useCveSearch, useDebounced, useExploits, useGeoIp, useIocLookup, useShodan } from '../../../src/hooks/useApi';
+import { useAbuseIpdb, useCveSearch, useDebounced, useExploits, useGeoIp, useIocLookup, useKevIds, useShodan } from '../../../src/hooks/useApi';
+import { KevBadge } from '../../../src/components/ExploitBadges';
 import { summarizeCve, severityColor } from '../../../src/lib/cvss';
 import { detectIocType } from '../../../src/lib/ioc';
 import { flagEmoji, shortDate, truncate } from '../../../src/lib/format';
@@ -37,6 +41,14 @@ export default function SearchScreen() {
   // CVE / Exploits search as you type (like the website); IOC / IP only on Enter or the Look up button.
   const explicit = mode === 'ioc' || mode === 'ip';
   const effective = explicit ? submitted : submitted || debounced;
+  const history = useSearchHistory(mode);
+
+  // Remember completed searches: explicit submits, or debounced terms of 3+ chars for the type-ahead modes.
+  useEffect(() => {
+    if (!effective || (!explicit && effective.trim().length < 3)) return;
+    history.add(effective);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effective, explicit]);
 
   return (
     <Screen edges={['top', 'left', 'right']}>
@@ -59,6 +71,37 @@ export default function SearchScreen() {
         <Pressable onPress={() => setSubmitted(query.trim())} style={s.lookupBtn}>
           <Text style={s.lookupText}>Look up</Text>
         </Pressable>
+      ) : null}
+      {!query.trim() && history.items.length ? (
+        <View style={s.history}>
+          <View style={s.historyHead}>
+            <Text style={s.historyTitle}>RECENT</Text>
+            <Pressable onPress={history.clear} hitSlop={8}>
+              <Text style={s.historyClear}>Clear</Text>
+            </Pressable>
+          </View>
+          <View style={s.historyChips}>
+            {history.items.map((h) => (
+              <View key={h} style={s.historyChip}>
+                <Pressable
+                  onPress={() => {
+                    setQuery(h);
+                    setSubmitted(h);
+                  }}
+                  style={s.historyChipMain}
+                >
+                  <Clock size={12} color={colors.muted} />
+                  <Text style={s.historyChipText} numberOfLines={1}>
+                    {h}
+                  </Text>
+                </Pressable>
+                <Pressable onPress={() => history.remove(h)} hitSlop={8}>
+                  <X size={12} color={colors.muted} />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        </View>
       ) : null}
       <ScrollView
         keyboardShouldPersistTaps="handled"
@@ -101,6 +144,7 @@ function Hint({ text }: { text: string }) {
 function CveResults({ keyword }: { keyword: string }) {
   const router = useRouter();
   const { data, error, isLoading, mutate } = useCveSearch(keyword.trim().length >= 3 ? keyword : '', 25);
+  const { ids: kevIds } = useKevIds();
   if (!keyword.trim()) return <Hint text="Searches the NVD database. Results include CVSS v3.1 scores." />;
   if (keyword.trim().length < 3) return <Hint text={moreChars(keyword)} />;
   if (isLoading && !data) return <Loading label="Searching NVD…" />;
@@ -115,7 +159,12 @@ function CveResults({ keyword }: { keyword: string }) {
           key={c.id}
           title={c.id}
           subtitle={`${shortDate(c.published)} · ${truncate(c.description, 100)}`}
-          right={<CVSSBadge score={c.score} severity={c.severity} />}
+          right={
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              {kevIds.has(c.id) ? <KevBadge /> : null}
+              <CVSSBadge score={c.score} severity={c.severity} />
+            </View>
+          }
           onPress={() => router.push({ pathname: '/cve/[id]', params: { id: c.id } })}
         />
       ))}
@@ -306,6 +355,14 @@ function ExploitResults({ keyword }: { keyword: string }) {
 const makeStyles = (c: Palette) => StyleSheet.create({
   h1: { color: c.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm },
   hint: { color: c.muted, fontSize: 13, textAlign: 'center', padding: spacing.xl, lineHeight: 19 },
+  history: { paddingHorizontal: spacing.lg, paddingBottom: spacing.sm },
+  historyHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  historyTitle: { color: c.muted, fontSize: 10, fontWeight: '700', letterSpacing: 1.2 },
+  historyClear: { color: c.accent, fontSize: 12, fontWeight: '600' },
+  historyChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  historyChip: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface, borderRadius: 999, paddingLeft: 10, paddingRight: 8, paddingVertical: 5, maxWidth: '100%' },
+  historyChipMain: { flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: 220 },
+  historyChipText: { color: c.subtle, fontSize: 12 },
   lookupBtn: { alignSelf: 'flex-end', marginRight: spacing.lg, backgroundColor: c.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
   lookupText: { color: c.bg, fontWeight: '800', fontSize: 13 },
   verdict: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

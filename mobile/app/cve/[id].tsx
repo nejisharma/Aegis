@@ -5,8 +5,10 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ExternalLink, Share2 } from 'lucide-react-native';
 import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
-import { CVSSBadge, Card, EmptyState, KeyValue, Loading, OfflineBanner, Pill, SectionHeader } from '../../src/components/ui';
-import { useCve } from '../../src/hooks/useApi';
+import { CVSSBadge, Card, EmptyState, KeyValue, Loading, OfflineBanner, Pill, SectionHeader, Skeleton } from '../../src/components/ui';
+import { KevBadge } from '../../src/components/ExploitBadges';
+import { useCve, useEpss, useKev } from '../../src/hooks/useApi';
+import { epssPercent, epssTone, epssTopPercent, kevSummaryLine } from '../../src/lib/exploit';
 import { summarizeCve } from '../../src/lib/cvss';
 import { shortDate } from '../../src/lib/format';
 import { useColors } from '../../src/theme/ThemeProvider';
@@ -51,6 +53,14 @@ function CveBody({ item }: { item: NonNullable<ReturnType<typeof useCve>['data']
   const metric = item.cve.metrics?.cvssMetricV31?.[0]?.cvssData;
   const weaknesses = item.cve.weaknesses?.flatMap((w) => w.description.map((d) => d.value)).filter((v) => v !== 'NVD-CWE-noinfo' && v !== 'NVD-CWE-Other') ?? [];
   const refs = item.cve.references ?? [];
+  const ids = useMemo(() => [c.id], [c.id]);
+  const epss = useEpss(ids);
+  const kev = useKev();
+  const epssScore = epss.data?.scores[c.id];
+  const kevItem = kev.data?.items.find((k) => k.cveID === c.id);
+  const exploitLoading = (epss.isLoading && !epss.data) || (kev.isLoading && !kev.data);
+  // Hide the card entirely when both sources failed; a partial failure just hides that row.
+  const exploitFailed = !!epss.error && !epss.data && !!kev.error && !kev.data;
 
   return (
     <View style={{ padding: spacing.lg, gap: spacing.md }}>
@@ -58,7 +68,10 @@ function CveBody({ item }: { item: NonNullable<ReturnType<typeof useCve>['data']
         <Text style={s.id} selectable>
           {c.id}
         </Text>
-        <CVSSBadge score={c.score} severity={c.severity} />
+        <View style={s.badges}>
+          {kevItem ? <KevBadge size="md" /> : null}
+          <CVSSBadge score={c.score} severity={c.severity} />
+        </View>
       </View>
       <Text style={s.desc} selectable>
         {c.description}
@@ -79,6 +92,34 @@ function CveBody({ item }: { item: NonNullable<ReturnType<typeof useCve>['data']
           </>
         ) : null}
       </Card>
+
+      {exploitFailed ? null : (
+        <Card>
+          <SectionHeader title="Exploitation" />
+          {exploitLoading ? (
+            <Skeleton lines={2} />
+          ) : (
+            <>
+              {epssScore ? (
+                <View style={s.exploitRow}>
+                  <Text style={[s.exploitHeadline, { color: colors[epssTone(epssScore.epss)] }]}>
+                    {epssPercent(epssScore.epss)} · {epssTopPercent(epssScore.percentile)} of all CVEs
+                  </Text>
+                  <Text style={s.exploitHint}>Probability of exploitation in the next 30 days (FIRST EPSS)</Text>
+                </View>
+              ) : null}
+              {kev.data ? (
+                <View style={s.exploitRow}>
+                  <Text style={[s.exploitHeadline, { color: kevItem ? colors.critical : colors.subtle }]}>
+                    {kevItem ? kevSummaryLine(kevItem) : 'Not in CISA KEV'}
+                  </Text>
+                  {kevItem?.requiredAction ? <Text style={s.exploitHint}>{kevItem.requiredAction}</Text> : null}
+                </View>
+              ) : null}
+            </>
+          )}
+        </Card>
+      )}
 
       {weaknesses.length ? (
         <View>
@@ -115,6 +156,10 @@ function CveBody({ item }: { item: NonNullable<ReturnType<typeof useCve>['data']
 const makeStyles = (c: Palette) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
   id: { color: c.accent, fontSize: 18, fontWeight: '700', fontFamily: 'monospace' },
+  badges: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  exploitRow: { paddingVertical: 6, gap: 2 },
+  exploitHeadline: { fontSize: 14, fontWeight: '700' },
+  exploitHint: { color: c.muted, fontSize: 12, lineHeight: 17 },
   desc: { color: c.text, fontSize: 14, lineHeight: 21 },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingHorizontal: spacing.lg },
   ref: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: spacing.lg, paddingVertical: 8 },

@@ -78,6 +78,10 @@ ABUSEIPDB_API_KEY=your_key             # Free at https://www.abuseipdb.com — 1
 
 Most features work without API keys. Panels that require them show setup instructions.
 
+```env
+NVD_API_KEY=your_key                   # Free at https://nvd.nist.gov/developers/request-an-api-key — raises NVD's limit from 5 to 50 requests / 30 s (recommended once the mobile app and cron are live)
+```
+
 ### Push notifications (mobile app)
 
 The mobile app (see `mobile/`) receives push notifications from a Vercel Cron job (`/api/cron/notify`, every 30 min, see `vercel.json`). It needs:

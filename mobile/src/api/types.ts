@@ -361,3 +361,54 @@ export interface PushPrefs {
   /** Lower-cased keywords the device wants CVE alerts for (max 20). */
   watchlist_terms: string[];
 }
+
+// ---- mobile-only: /api/epss (FIRST EPSS exploit-probability scores) ----
+export interface EpssScore {
+  /** Probability of exploitation in the next 30 days (0–1). */
+  epss: number;
+  /** Percentile among all scored CVEs (0–1). */
+  percentile: number;
+  date: string;
+}
+
+export interface EpssResponse {
+  scores: Record<string, EpssScore>;
+}
+
+// ---- mobile-only: /api/kev (CISA Known Exploited Vulnerabilities) ----
+export interface KevItem {
+  cveID: string;
+  vendorProject: string;
+  product: string;
+  vulnerabilityName: string;
+  dateAdded: string;
+  shortDescription: string;
+  requiredAction: string;
+  dueDate: string;
+  knownRansomwareCampaignUse: 'Known' | 'Unknown';
+  notes: string;
+}
+
+export interface KevResponse {
+  count: number;
+  catalogVersion: string;
+  dateReleased: string;
+  items: KevItem[];
+}
+
+export interface KevIdsResponse {
+  ids: string[];
+}
+
+// ---- mobile-only: /api/article (Readability extraction for offline reading) ----
+export interface ArticleResponse {
+  title: string;
+  byline: string | null;
+  siteName: string | null;
+  excerpt: string;
+  textContent: string;
+  contentHtml: string;
+  length: number;
+  url: string;
+  fetchedAt: string;
+}

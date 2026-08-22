@@ -1,5 +1,5 @@
 import useSWR, { type SWRConfiguration } from 'swr';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ApiError } from '../api/client';
 import * as ep from '../api/endpoints';
 import { detectIocType, type IocType } from '../lib/ioc';
@@ -70,6 +70,24 @@ export const useMitre = () => useQuery('mitre:all', () => ep.getMitre(), { reval
 export const useExploits = (keyword: string) =>
   useQuery(keyword.trim() ? `exploits:${keyword.trim()}` : null, () => ep.searchExploits(keyword.trim()), { revalidateOnFocus: false });
 export const useRansomware = () => useQuery('ransomware', () => ep.getRansomware(), { refreshInterval: 30 * 60_000 });
+/** EPSS scores for a batch of CVE ids (null key when empty; scores refresh daily upstream). */
+export const useEpss = (ids: string[]) => {
+  const sorted = [...ids].map((i) => i.toUpperCase()).sort();
+  return useQuery(sorted.length ? `epss:${sorted.join(',')}` : null, () => ep.getEpss(sorted), {
+    revalidateOnFocus: false,
+    dedupingInterval: 6 * 60 * 60_000,
+  });
+};
+
+export const useKev = () => useQuery('kev', () => ep.getKev(), { refreshInterval: 60 * 60_000 });
+
+/** All CVE ids in the CISA KEV catalog as a Set, for flagging rows cheaply. */
+export const useKevIds = () => {
+  const swr = useQuery('kev:ids', () => ep.getKevIds(), { refreshInterval: 6 * 60 * 60_000, revalidateOnFocus: false });
+  const ids = useMemo(() => new Set(swr.data?.ids ?? []), [swr.data]);
+  return { ...swr, ids };
+};
+
 export const usePhishing = () => useQuery('phishing', () => ep.getPhishing(), { refreshInterval: 60 * 60_000 });
 
 export interface IocLookupState {

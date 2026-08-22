@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { ExpoPushMessage } from 'expo-server-sdk';
 import { API_URLS } from '@/lib/constants';
+import { nvdHeaders } from '@/lib/nvd';
 import type { NVDResponse } from '@/types/cve';
 import type { NewsItem } from '@/types/news';
 import { addSeen, getDevices, getRedis, getSeen, KEYS, removeDevices } from '@/lib/push/redis';
@@ -24,7 +25,7 @@ async function fetchRecentCves(severity?: 'CRITICAL'): Promise<NVDResponse['vuln
     `&pubStartDate=${encodeURIComponent(start.toISOString())}` +
     `&pubEndDate=${encodeURIComponent(end.toISOString())}&resultsPerPage=${severity ? 50 : 200}`;
   const res = await fetch(url, {
-    headers: { 'User-Agent': 'AEGIS-Dashboard/1.0' },
+    headers: nvdHeaders(),
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) throw new Error(`NVD ${res.status}`);

@@ -11,6 +11,7 @@ import { useNotificationRouting } from '../src/notifications/handlers';
 import { loadToken } from '../src/notifications/prefs';
 import { registerForPush } from '../src/notifications/register';
 import { initMonitoring, wrapRoot } from '../src/lib/monitoring';
+import { refreshWidgets } from '../src/widgets/refresh';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 initMonitoring();
@@ -38,6 +39,11 @@ function RootLayout() {
       if (t) registerForPush().catch(() => {});
     });
   }, []);
+
+  // Push fresh data to any home-screen widgets once the persisted cache is ready.
+  useEffect(() => {
+    if (cache) refreshWidgets().catch(() => {});
+  }, [cache]);
 
   // Keep the native splash visible until the persisted SWR cache is hydrated.
   if (!cache) return null;

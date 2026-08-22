@@ -5,6 +5,8 @@ export const API_URLS = {
   THREATFOX: 'https://threatfox-api.abuse.ch/api/v1/',
   URLHAUS: 'https://urlhaus-api.abuse.ch/v1',
   MALWARE_BAZAAR: 'https://mb-api.abuse.ch/api/v1/',
+  EPSS: 'https://api.first.org/data/v1/epss',
+  KEV: 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json',
 } as const;
 
 export const RSS_FEEDS = {
