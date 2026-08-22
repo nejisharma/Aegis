@@ -1,4 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useAnimatedCounter } from '../../../src/hooks/useAnimatedCounter';
+import { useMitre } from '../../../src/hooks/useApi';
+import { StatCard } from '../../../src/components/ui';
 import { useRouter, type Href } from 'expo-router';
 import { BarChart3, Bug, Calendar, Crosshair, Fish, Gamepad2, Lock, Shield } from 'lucide-react-native';
 import { Screen } from '../../../src/components/Screen';
@@ -20,9 +23,23 @@ const SECTIONS: { href: Href; title: string; subtitle: string; Icon: typeof Shie
 
 export default function IntelScreen() {
   const router = useRouter();
+  // Same headline figures as the website overview: drifting counters plus the live APT group count.
+  const totalCves = useAnimatedCounter(254387, 2000, 6000);
+  const malwareSamples = useAnimatedCounter(12847, 4000, 10000);
+  const iocsTracked = useAnimatedCounter(89234, 3000, 8000);
+  const mitre = useMitre();
+  const aptGroups = mitre.data?.groups.length || 142;
   return (
     <Screen scroll edges={['top', 'left', 'right']}>
       <ScreenTitle title="Threat Intel" />
+      <View style={s.stats}>
+        <StatCard label="Total CVEs" value={totalCves.toLocaleString()} color={colors.accent} />
+        <StatCard label="Malware samples" value={malwareSamples.toLocaleString()} color={colors.medium} />
+      </View>
+      <View style={[s.stats, { paddingTop: spacing.sm }]}>
+        <StatCard label="IOCs tracked" value={iocsTracked.toLocaleString()} color={colors.high} />
+        <StatCard label="APT groups" value={aptGroups} color={colors.critical} />
+      </View>
       <View style={s.grid}>
         {SECTIONS.map(({ href, title, subtitle, Icon, color }) => (
           <Pressable key={title} onPress={() => router.push(href)} style={({ pressed }) => [s.tile, pressed && s.tilePressed]}>
@@ -43,6 +60,7 @@ export default function IntelScreen() {
 
 const s = StyleSheet.create({
   h1: { color: colors.text, fontSize: 22, fontWeight: '700', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  stats: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   grid: { flexDirection: 'row', flexWrap: 'wrap', padding: spacing.lg, gap: spacing.md },
   tile: {
     width: '47.5%',

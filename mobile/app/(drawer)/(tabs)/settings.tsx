@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import Constants from 'expo-constants';
-import { Bell, BellOff, ExternalLink, Globe } from 'lucide-react-native';
+import { Bell, BellOff, FileText, Globe, ShieldCheck } from 'lucide-react-native';
 import { Screen } from '../../../src/components/Screen';
 import { ScreenTitle } from '../../../src/components/ScreenTitle';
 import { Card, SectionHeader } from '../../../src/components/ui';
@@ -97,7 +97,8 @@ export default function SettingsScreen() {
       <SectionHeader title="About" />
       <View style={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}>
         <LinkRow icon={<Globe size={16} color={colors.accent} />} label="aegis.neeraj.ca" onPress={() => openUrl(SITE_URL)} />
-        <LinkRow icon={<ExternalLink size={16} color={colors.accent} />} label="Privacy notice" onPress={() => openUrl(`${SITE_URL}/privacy`)} />
+        <LinkRow icon={<ShieldCheck size={16} color={colors.accent} />} label="Privacy policy" onPress={() => openUrl(`${SITE_URL}/privacy`)} />
+        <LinkRow icon={<FileText size={16} color={colors.accent} />} label="Terms & conditions" onPress={() => openUrl(`${SITE_URL}/terms`)} />
       </View>
 
       <Text style={s.footer}>

@@ -20,4 +20,5 @@ export const THREAT_TYPE_LABELS: Record<(typeof THREAT_TYPES)[number], string> =
 export const NEWS_SOURCES = ['BleepingComputer', 'Krebs on Security', 'The Hacker News', 'SecurityWeek'] as const;
 
 export const SITE_URL = 'https://aegis.neeraj.ca';
-export const PRIVACY_URL = 'https://aegis.neeraj.ca/#privacy';
+export const PRIVACY_URL = 'https://aegis.neeraj.ca/privacy';
+export const TERMS_URL = 'https://aegis.neeraj.ca/terms';
