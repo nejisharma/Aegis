@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, GeoJSONSource, Layer, Map as MapLibreMap, type CameraRef, type MapRef } from '@maplibre/maplibre-react-native';
 import { Maximize2, Minus, Plus, X } from 'lucide-react-native';
@@ -258,6 +258,11 @@ function MapView({
         </GeoJSONSource>
       </MapLibreMap>
 
+      {/* CARTO basemap terms require visible attribution (the website shows the same line). */}
+      <Text style={styles.attribution} onPress={() => Linking.openURL('https://carto.com/attributions')}>
+        © OpenStreetMap © CARTO
+      </Text>
+
       {onClose ? (
         <View style={styles.topLeft}>
           <Pressable onPress={onClose} style={styles.closeBtn} hitSlop={8}>
@@ -312,4 +317,5 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     justifyContent: 'center',
   },
   fullTitle: { color: c.subtle, fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
+  attribution: { position: 'absolute', left: 8, bottom: 6, color: c.subtle, fontSize: 9, backgroundColor: `${c.surface}b3`, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4 },
 });
