@@ -49,7 +49,7 @@ Point the app at a local API with `.env` (`EXPO_PUBLIC_API_URL=http://10.0.2.2:3
 
 ## iOS
 
-Built on Codemagic (`codemagic.yaml`, workflow `ios-testflight`) because this machine is Windows. One-time setup is listed at the top of that file.
+Built on Codemagic (`../codemagic.yaml` at the repo root, workflow `ios-testflight`) because this machine is Windows. One-time setup is listed at the top of that file. The iOS widget target is opt-in via `IOS_WIDGET=1` (see `app.config.js`); the first TestFlight build ships without it.
 
 ## Store submission checklist (NEEDS-CONFIG)
 

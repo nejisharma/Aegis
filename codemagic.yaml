@@ -18,8 +18,14 @@
 #     record for `ca.neeraj.aegis` exists.
 #  5. Android (optional): group `aegis-android` with CM_KEYSTORE (base64),
 #     CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD.
+#  6. iOS home-screen widget is OFF by default (app.config.js gates it on
+#     IOS_WIDGET=1). Turning it on needs, in the Apple portal first: App Group
+#     `group.ca.neeraj.aegis`, App Groups capability on ca.neeraj.aegis, a
+#     second identifier ca.neeraj.aegis.widget with App Groups, and a second
+#     `app-store-connect fetch-signing-files "ca.neeraj.aegis.widget"` line in
+#     the signing step below. Do it as a separate build after push works.
 #
-# The working directory is `mobile/` inside the Aegis repo.
+# Lives at the repo root (Codemagic only auto-detects it there); every step does `cd mobile`.
 
 definitions:
   env_versions: &env_versions

@@ -1,22 +1,29 @@
-import { useMemo, useState, type ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, type ReactNode } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
-import { RefreshCw } from 'lucide-react-native';
 import { ErrorState } from '../src/components/ErrorState';
 import { Screen } from '../src/components/Screen';
-import { Card, EmptyState, OfflineBanner, Skeleton } from '../src/components/ui';
-import { useMitre, useRecentCves } from '../src/hooks/useApi';
-import { attackVectorDistribution, severityDistribution, topCountries, topTechniquesByUsage, type Bucket } from '../src/lib/analytics';
-import { generateBatch } from '../src/lib/threat-simulator';
+import { Donut, HBarChart, Radar, VBarChart, type ChartDatum } from '../src/components/charts';
+import { Card, OfflineBanner, Skeleton, UpdatedAt } from '../src/components/ui';
+import { useMalwareRecent, useMitre, useRecentCves, useThreatFoxRecent } from '../src/hooks/useApi';
+import { useSimulatedThreats } from '../src/hooks/useSimulatedThreats';
+import {
+  attackVectorDistribution,
+  FILE_TYPE_COLORS,
+  groupCounts,
+  IOC_TYPE_COLORS,
+  severityCounts,
+  severityDistribution,
+  threatRadar,
+  threatTypeDistribution,
+  topCountries,
+  topTechniquesByUsage,
+} from '../src/lib/analytics';
 import { severityColor } from '../src/lib/cvss';
 import { flagEmoji } from '../src/lib/format';
 import { useColors } from '../src/theme/ThemeProvider';
 import type { Palette } from '../src/theme/palettes';
 import { radius, spacing } from '../src/theme/spacing';
-
-/** Broad NVD keyword so the sample spans all severities (the home tab's "critical" query is too narrow). */
-/** Roughly what the web map accumulates in its 60-second window. */
-const SIM_EVENTS = 120;
 
 const VECTOR_COLORS: Record<string, keyof Palette> = {
   NETWORK: 'critical',
@@ -25,138 +32,207 @@ const VECTOR_COLORS: Record<string, keyof Palette> = {
   PHYSICAL: 'low',
 };
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 export default function AnalyticsScreen() {
   const colors = useColors();
-  const cves = useRecentCves();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+  const { events } = useSimulatedThreats();
   const mitre = useMitre();
-  // Mirrors the web: counts derived from the simulated threat stream; the refresh button re-rolls the sample.
-  const [events, setEvents] = useState(() => generateBatch(SIM_EVENTS));
+  const threatfox = useThreatFoxRecent();
+  const malware = useMalwareRecent();
+  const cves = useRecentCves();
 
-  const items = cves.data?.vulnerabilities ?? [];
-  const severity = useMemo(() => severityDistribution(items), [items]);
-  const vectors = useMemo(() => attackVectorDistribution(items), [items]);
-  const techniques = useMemo(() => (mitre.data ? topTechniquesByUsage(mitre.data.techniques, mitre.data.groups, 8) : []), [mitre.data]);
-  const attackers = useMemo(() => topCountries(events, 'source', 8), [events]);
-  const targets = useMemo(() => topCountries(events, 'target', 8), [events]);
+  // --- Live (simulated, last 60 s) ---
+  const attackers = useMemo<ChartDatum[]>(
+    () => topCountries(events, 'source', 10).map((c) => ({ label: c.name, value: c.count, color: colors.critical, prefix: flagEmoji(c.code) })),
+    [events, colors],
+  );
+  const targets = useMemo<ChartDatum[]>(
+    () => topCountries(events, 'target', 10).map((c) => ({ label: c.name, value: c.count, color: colors.low, prefix: flagEmoji(c.code) })),
+    [events, colors],
+  );
+  const severity = useMemo<ChartDatum[]>(
+    () => severityCounts(events).map((b) => ({ label: capitalize(b.severity), value: b.count, color: colors[b.severity] })),
+    [events, colors],
+  );
+  const types = useMemo<ChartDatum[]>(() => threatTypeDistribution(events).map((t) => ({ label: t.type, value: t.count, color: t.color })), [events]);
+  const totalEvents = events.length;
+  const radar = useMemo(() => threatRadar(events), [events]);
+
+  // --- Network-backed ---
+  const techniques = useMemo<ChartDatum[]>(
+    () => (mitre.data ? topTechniquesByUsage(mitre.data.techniques, mitre.data.groups, 10) : []).map((t) => ({ label: `${t.name} (${t.id})`, value: t.count, color: colors.accent })),
+    [mitre.data, colors],
+  );
+  const iocTypes = useMemo<ChartDatum[]>(
+    () => groupCounts(threatfox.data?.data ?? [], (i) => i.threat_type, 7).map((g, i) => ({ label: g.label, value: g.count, color: IOC_TYPE_COLORS[i % IOC_TYPE_COLORS.length] })),
+    [threatfox.data],
+  );
+  const fileTypes = useMemo<ChartDatum[]>(
+    () => groupCounts(malware.data?.data ?? [], (m) => m.file_type, 8).map((g, i) => ({ label: g.label, value: g.count, color: FILE_TYPE_COLORS[i % FILE_TYPE_COLORS.length] })),
+    [malware.data],
+  );
+  const malwareCount = malware.data?.data.length ?? 0;
+
+  const cveItems = cves.data?.vulnerabilities ?? [];
+  const cvss = useMemo<ChartDatum[]>(() => severityDistribution(cveItems).map((b) => ({ label: capitalize(b.label.toLowerCase()), value: b.count, color: severityColor(b.label) })), [cveItems]);
+  const vectors = useMemo<ChartDatum[]>(
+    () => attackVectorDistribution(cveItems).map((b) => ({ label: capitalize(b.label.toLowerCase()), value: b.count, color: colors[VECTOR_COLORS[b.label] ?? 'muted'] })),
+    [cveItems, colors],
+  );
+
+  const waiting = <Text style={s.none}>Waiting for threat events…</Text>;
 
   return (
     <Screen scroll>
       <Stack.Screen options={{ title: 'Analytics' }} />
-      <OfflineBanner visible={cves.isOffline || mitre.isOffline} />
+      <OfflineBanner visible={mitre.isOffline || threatfox.isOffline || malware.isOffline || cves.isOffline} />
       <View style={{ padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl }}>
+        <Text style={s.intro}>Live metrics from threat feeds, MITRE ATT&CK &amp; simulated events</Text>
+
+        {/* 1. Top Attacking Countries */}
         <Card>
-          <CardTitle title="CVSS severity" note={`latest ${items.length} NVD results`} />
-          {cves.isLoading && !cves.data ? (
-            <Skeleton lines={4} />
-          ) : cves.error && !cves.data ? (
-            <ErrorState error={cves.error} onRetry={() => cves.mutate()} />
-          ) : (
-            <Bars buckets={severity} colorFor={(b) => severityColor(b.label)} />
-          )}
+          <CardTitle title="Top Attacking Countries" live />
+          {attackers.length ? <HBarChart data={attackers} /> : waiting}
         </Card>
 
+        {/* 2. Top Targeted Countries */}
         <Card>
-          <CardTitle title="Attack vectors" note="CVSS v3.1 AV" />
-          {cves.isLoading && !cves.data ? <Skeleton lines={4} /> : cves.data ? <Bars buckets={vectors} colorFor={(b) => colors[VECTOR_COLORS[b.label] ?? 'muted']} /> : null}
+          <CardTitle title="Top Targeted Countries" live />
+          {targets.length ? <HBarChart data={targets} /> : waiting}
         </Card>
 
+        {/* 3. Threat Severity */}
         <Card>
-          <CardTitle title="Top ATT&CK techniques" note="by APT group usage" />
+          <CardTitle title="Threat Severity" live />
+          {severity.some((d) => d.value > 0) ? <VBarChart data={severity} height={200} /> : waiting}
+        </Card>
+
+        {/* 4. Attack Types */}
+        <Card>
+          <CardTitle title="Attack Types" live />
+          {types.length ? <Donut data={types} size={180} centerLabel={String(totalEvents)} centerSub="Events" /> : waiting}
+        </Card>
+
+        {/* 5. Top ATT&CK Techniques */}
+        <Card>
+          <CardTitle title="Top ATT&CK Techniques" note="by APT group usage" />
           {mitre.isLoading && !mitre.data ? (
             <Skeleton lines={6} />
           ) : mitre.error && !mitre.data ? (
             <ErrorState error={mitre.error} onRetry={() => mitre.mutate()} />
+          ) : techniques.length ? (
+            <HBarChart data={techniques} />
           ) : (
-            <View style={{ gap: spacing.sm }}>
-              {techniques.map((t, i) => (
-                <BarRow key={t.id} rank={i + 1} label={`${t.name} (${t.id})`} value={t.count} pct={t.pct} color={colors.accent} />
-              ))}
-            </View>
+            <Text style={s.none}>No MITRE data available</Text>
           )}
+          {mitre.data ? <UpdatedAt at={mitre.updatedAt} refreshing={mitre.isRefreshing} /> : null}
+        </Card>
+
+        {/* 6. Threat Radar */}
+        <Card>
+          <CardTitle title="Threat Radar" live />
+          <Radar axes={radar} size={260} color={colors.accent} />
+        </Card>
+
+        {/* 7. IOC Threat Types */}
+        <Card>
+          <CardTitle title="IOC Threat Types" note="ThreatFox — Last 24h" />
+          {threatfox.isLoading && !threatfox.data ? (
+            <Skeleton lines={4} />
+          ) : threatfox.error && !threatfox.data ? (
+            <ErrorState error={threatfox.error} onRetry={() => threatfox.mutate()} />
+          ) : iocTypes.length ? (
+            <VBarChart data={iocTypes} height={210} />
+          ) : (
+            <Text style={s.none}>No IOC data — check API key configuration</Text>
+          )}
+          {threatfox.data ? <UpdatedAt at={threatfox.updatedAt} refreshing={threatfox.isRefreshing} /> : null}
+        </Card>
+
+        {/* 8. Malware File Types */}
+        <Card>
+          <CardTitle title="Malware File Types" note={`MalwareBazaar — Latest ${malwareCount || 100}`} />
+          {malware.isLoading && !malware.data ? (
+            <Skeleton lines={4} />
+          ) : malware.error && !malware.data ? (
+            <ErrorState error={malware.error} onRetry={() => malware.mutate()} />
+          ) : fileTypes.length ? (
+            <Donut data={fileTypes} size={180} centerLabel={String(malwareCount)} centerSub="Samples" />
+          ) : (
+            <Text style={s.none}>No malware data — check API key configuration</Text>
+          )}
+          {malware.data ? <UpdatedAt at={malware.updatedAt} refreshing={malware.isRefreshing} /> : null}
+        </Card>
+
+        {/* App-only extras */}
+        <Card>
+          <CardTitle title="CVSS Severity" note={`latest ${cveItems.length} NVD results`} />
+          {cves.isLoading && !cves.data ? (
+            <Skeleton lines={4} />
+          ) : cves.error && !cves.data ? (
+            <ErrorState error={cves.error} onRetry={() => cves.mutate()} />
+          ) : cvss.some((d) => d.value > 0) ? (
+            <VBarChart data={cvss} height={200} />
+          ) : (
+            <Text style={s.none}>No scored results.</Text>
+          )}
+          {cves.data ? <UpdatedAt at={cves.updatedAt} refreshing={cves.isRefreshing} /> : null}
         </Card>
 
         <Card>
-          <CardTitle
-            title="Top attacking countries"
-            note="simulated"
-            right={
-              <Pressable onPress={() => setEvents(generateBatch(SIM_EVENTS))} hitSlop={8}>
-                <RefreshCw size={14} color={colors.muted} />
-              </Pressable>
-            }
-          />
-          <View style={{ gap: spacing.sm }}>
-            {attackers.map((c, i) => (
-              <BarRow key={c.code} rank={i + 1} label={`${flagEmoji(c.code)} ${c.name}`} value={c.count} pct={c.pct} color={colors.critical} />
-            ))}
-          </View>
-        </Card>
-
-        <Card>
-          <CardTitle title="Top targeted countries" note="simulated" />
-          <View style={{ gap: spacing.sm }}>
-            {targets.map((c, i) => (
-              <BarRow key={c.code} rank={i + 1} label={`${flagEmoji(c.code)} ${c.name}`} value={c.count} pct={c.pct} color={colors.low} />
-            ))}
-          </View>
+          <CardTitle title="Attack Vectors" note="CVSS v3.1 AV" />
+          {cves.isLoading && !cves.data ? (
+            <Skeleton lines={4} />
+          ) : cves.data ? (
+            vectors.some((d) => d.value > 0) ? (
+              <VBarChart data={vectors} height={200} />
+            ) : (
+              <Text style={s.none}>No scored results.</Text>
+            )
+          ) : null}
         </Card>
       </View>
     </Screen>
   );
 }
 
-function CardTitle({ title, note, right }: { title: string; note?: string; right?: ReactNode }) {
+function CardTitle({ title, note, live, right }: { title: string; note?: string; live?: boolean; right?: ReactNode }) {
   const colors = useColors();
   const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={s.cardHead}>
       <Text style={s.cardTitle}>{title}</Text>
       {note ? <Text style={s.cardNote}>{note}</Text> : null}
+      {live ? (
+        <View style={s.live}>
+          <View style={s.liveDot} />
+          <Text style={s.liveText}>live · last 60 s</Text>
+        </View>
+      ) : null}
       {right}
     </View>
   );
 }
 
-function Bars({ buckets, colorFor }: { buckets: Bucket[]; colorFor: (b: Bucket) => string }) {
-  const colors = useColors();
-  const s = useMemo(() => makeStyles(colors), [colors]);
-  const max = Math.max(1, ...buckets.map((b) => b.count));
-  if (!buckets.some((b) => b.count > 0)) return <Text style={s.none}>No scored results.</Text>;
-  return (
-    <View style={{ gap: spacing.sm }}>
-      {buckets.map((b) => (
-        <BarRow key={b.label} label={b.label} value={`${b.count} · ${Math.round(b.pct * 100)}%`} pct={b.count / max} color={colorFor(b)} />
-      ))}
-    </View>
-  );
-}
-
-function BarRow({ rank, label, value, pct, color }: { rank?: number; label: string; value: string | number; pct: number; color: string }) {
-  const colors = useColors();
-  const s = useMemo(() => makeStyles(colors), [colors]);
-  return (
-    <View style={s.barRow}>
-      {rank !== undefined ? <Text style={s.rank}>{rank}</Text> : null}
-      <Text style={s.barLabel} numberOfLines={1}>
-        {label}
-      </Text>
-      <View style={s.track}>
-        <View style={[s.fill, { width: `${Math.max(2, Math.round(pct * 100))}%`, backgroundColor: color }]} />
-      </View>
-      <Text style={[s.value, { color }]}>{value}</Text>
-    </View>
-  );
-}
-
-const makeStyles = (c: Palette) => StyleSheet.create({
-  cardHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
-  cardTitle: { color: c.text, fontSize: 14, fontWeight: '700' },
-  cardNote: { color: c.muted, fontSize: 11, flex: 1 },
-  none: { color: c.muted, fontSize: 12 },
-  barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  rank: { color: c.muted, fontSize: 11, width: 14, textAlign: 'right', fontVariant: ['tabular-nums'] },
-  barLabel: { color: c.subtle, fontSize: 12, width: 120 },
-  track: { flex: 1, height: 12, borderRadius: radius.sm, backgroundColor: c.surfaceAlt, overflow: 'hidden' },
-  fill: { height: '100%', borderRadius: radius.sm },
-  value: { fontSize: 11, fontWeight: '600', minWidth: 44, textAlign: 'right', fontVariant: ['tabular-nums'] },
-});
+const makeStyles = (c: Palette) =>
+  StyleSheet.create({
+    intro: { color: c.muted, fontSize: 12, marginBottom: spacing.xs },
+    cardHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
+    cardTitle: { color: c.text, fontSize: 14, fontWeight: '700' },
+    cardNote: { color: c.muted, fontSize: 11, flex: 1 },
+    live: {
+      marginLeft: 'auto',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingHorizontal: 7,
+      paddingVertical: 2,
+      borderRadius: radius.sm,
+      backgroundColor: `${c.success}1a`,
+    },
+    liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: c.success, shadowColor: c.success, shadowOpacity: 0.9, shadowRadius: 4 },
+    liveText: { color: c.success, fontSize: 10, fontWeight: '600' },
+    none: { color: c.muted, fontSize: 12, paddingVertical: spacing.lg, textAlign: 'center' },
+  });

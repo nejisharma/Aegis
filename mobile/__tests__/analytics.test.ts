@@ -1,5 +1,15 @@
 import type { CVEItem, ThreatEvent } from '../src/api/types';
-import { attackVectorDistribution, severityDistribution, topCountries, topTechniquesByUsage } from '../src/lib/analytics';
+import {
+  attackVectorDistribution,
+  donutArcs,
+  groupCounts,
+  severityCounts,
+  severityDistribution,
+  threatRadar,
+  threatTypeDistribution,
+  topCountries,
+  topTechniquesByUsage,
+} from '../src/lib/analytics';
 import { generateBatch } from '../src/lib/threat-simulator';
 
 function cve(id: string, score: number | null, attackVector = 'NETWORK'): CVEItem {
@@ -102,6 +112,85 @@ describe('analytics helpers', () => {
     expect(top).toEqual([
       { id: 'T1', name: 'Phishing', count: 2, pct: 1 },
       { id: 'T2', name: 'T2', count: 1, pct: 0.5 },
+    ]);
+  });
+});
+
+describe('analytics (website parity helpers)', () => {
+  const ev = (type: ThreatEvent['type'], severity: ThreatEvent['severity'] = 'low'): ThreatEvent => ({
+    id: `${type}-${Math.random()}`,
+    sourceCountry: 'China',
+    sourceCountryCode: 'CN',
+    sourceLat: 0,
+    sourceLng: 0,
+    targetCountry: 'United States',
+    targetCountryCode: 'US',
+    targetLat: 0,
+    targetLng: 0,
+    type,
+    severity,
+    timestamp: Date.now(),
+    label: '',
+  });
+
+  it('threatTypeDistribution counts and sorts with web colours', () => {
+    const d = threatTypeDistribution([ev('malware'), ev('ddos'), ev('malware')]);
+    expect(d).toEqual([
+      { type: 'malware', count: 2, color: '#ef4444' },
+      { type: 'ddos', count: 1, color: '#3b82f6' },
+    ]);
+    expect(threatTypeDistribution([])).toEqual([]);
+  });
+
+  it('severityCounts always returns the four buckets in order', () => {
+    const c = severityCounts([ev('apt', 'critical'), ev('apt', 'low'), ev('apt', 'low')]);
+    expect(c).toEqual([
+      { severity: 'critical', count: 1 },
+      { severity: 'high', count: 0 },
+      { severity: 'medium', count: 0 },
+      { severity: 'low', count: 2 },
+    ]);
+  });
+
+  it('threatRadar normalises to 0–100 against the busiest type, in web label order', () => {
+    const r = threatRadar([ev('malware'), ev('malware'), ev('malware'), ev('malware'), ev('phishing')]);
+    expect(r.map((a) => a.label)).toEqual(['Malware', 'Phishing', 'Exploit', 'DDoS', 'Ransomware', 'APT', 'Bruteforce']);
+    expect(r[0].value).toBe(100);
+    expect(r[1].value).toBe(25);
+    expect(r[2].value).toBe(0);
+    expect(threatRadar([]).every((a) => a.value === 0)).toBe(true);
+  });
+
+  it('groupCounts honours limit and falls back to unknown', () => {
+    const items = [{ t: 'botnet_cc' }, { t: 'botnet_cc' }, { t: null }, { t: '' }, { t: 'payload' }];
+    const g = groupCounts(items, (i) => i.t, 2);
+    expect(g).toEqual([
+      { label: 'botnet_cc', count: 2, pct: 0.4 },
+      { label: 'unknown', count: 2, pct: 0.4 },
+    ]);
+    expect(groupCounts([], () => 'x')).toEqual([]);
+  });
+
+  it('donutArcs spans 360° in proportion', () => {
+    const arcs = donutArcs([1, 3]);
+    expect(arcs[0]).toEqual({ startAngle: 0, endAngle: 90, pct: 0.25 });
+    expect(arcs[1]).toEqual({ startAngle: 90, endAngle: 360, pct: 0.75 });
+    const many = donutArcs([5, 7, 11, 13]);
+    expect(many[many.length - 1].endAngle).toBeCloseTo(360);
+    expect(many.reduce((s, a) => s + (a.endAngle - a.startAngle), 0)).toBeCloseTo(360);
+    expect(many.reduce((s, a) => s + a.pct, 0)).toBeCloseTo(1);
+  });
+
+  it('donutArcs handles a single slice and degenerate input', () => {
+    expect(donutArcs([42])).toEqual([{ startAngle: 0, endAngle: 360, pct: 1 }]);
+    expect(donutArcs([0, 0])).toEqual([
+      { startAngle: 0, endAngle: 0, pct: 0 },
+      { startAngle: 0, endAngle: 0, pct: 0 },
+    ]);
+    expect(donutArcs([2, -1, NaN])).toEqual([
+      { startAngle: 0, endAngle: 360, pct: 1 },
+      { startAngle: 360, endAngle: 360, pct: 0 },
+      { startAngle: 360, endAngle: 360, pct: 0 },
     ]);
   });
 });
