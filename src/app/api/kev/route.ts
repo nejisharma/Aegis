@@ -42,10 +42,12 @@ function toItem(v: KevFeed['vulnerabilities'][number]): KevItem {
 /**
  * GET /api/kev?limit=200 → { count, catalogVersion, dateReleased, items } (newest first)
  * GET /api/kev?ids=1    → { ids: string[] } (every CVE id in the catalog)
+ * GET /api/kev?cve=ID   → { item: KevItem | null } (single lookup across the whole catalog)
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const idsOnly = searchParams.get('ids') === '1';
+  const cveLookup = (searchParams.get('cve') || '').trim().toUpperCase();
   const limit = Math.min(Math.max(Number(searchParams.get('limit') || DEFAULT_LIMIT) || DEFAULT_LIMIT, 1), MAX_LIMIT);
   const cacheHeaders = { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' };
 
@@ -62,6 +64,10 @@ export async function GET(request: NextRequest) {
 
     if (idsOnly) {
       return NextResponse.json({ ids: vulns.map((v) => v.cveID) }, { headers: cacheHeaders });
+    }
+    if (cveLookup) {
+      const hit = vulns.find((v) => v.cveID.toUpperCase() === cveLookup);
+      return NextResponse.json({ item: hit ? toItem(hit) : null }, { headers: cacheHeaders });
     }
 
     const items = vulns

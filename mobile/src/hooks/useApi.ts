@@ -81,6 +81,10 @@ export const useEpss = (ids: string[]) => {
 
 export const useKev = () => useQuery('kev', () => ep.getKev(), { refreshInterval: 60 * 60_000 });
 
+/** Single KEV lookup for a CVE (searches the whole catalog server-side). */
+export const useKevItem = (cve: string) =>
+  useQuery(cve ? `kev:item:${cve}` : null, () => ep.getKevItem(cve), { revalidateOnFocus: false, dedupingInterval: 6 * 60 * 60_000 });
+
 /** All CVE ids in the CISA KEV catalog as a Set, for flagging rows cheaply. */
 export const useKevIds = () => {
   const swr = useQuery('kev:ids', () => ep.getKevIds(), { refreshInterval: 6 * 60 * 60_000, revalidateOnFocus: false });

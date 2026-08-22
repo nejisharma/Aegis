@@ -7,7 +7,7 @@ import { ErrorState } from '../../src/components/ErrorState';
 import { Screen } from '../../src/components/Screen';
 import { CVSSBadge, Card, EmptyState, KeyValue, Loading, OfflineBanner, Pill, SectionHeader, Skeleton } from '../../src/components/ui';
 import { KevBadge } from '../../src/components/ExploitBadges';
-import { useCve, useEpss, useKev } from '../../src/hooks/useApi';
+import { useCve, useEpss, useKevItem } from '../../src/hooks/useApi';
 import { epssPercent, epssTone, epssTopPercent, kevSummaryLine } from '../../src/lib/exploit';
 import { summarizeCve } from '../../src/lib/cvss';
 import { shortDate } from '../../src/lib/format';
@@ -55,9 +55,9 @@ function CveBody({ item }: { item: NonNullable<ReturnType<typeof useCve>['data']
   const refs = item.cve.references ?? [];
   const ids = useMemo(() => [c.id], [c.id]);
   const epss = useEpss(ids);
-  const kev = useKev();
+  const kev = useKevItem(c.id);
   const epssScore = epss.data?.scores[c.id];
-  const kevItem = kev.data?.items.find((k) => k.cveID === c.id);
+  const kevItem = kev.data?.item ?? null;
   const exploitLoading = (epss.isLoading && !epss.data) || (kev.isLoading && !kev.data);
   // Hide the card entirely when both sources failed; a partial failure just hides that row.
   const exploitFailed = !!epss.error && !epss.data && !!kev.error && !kev.data;

@@ -4,6 +4,7 @@ import type {
   ArticleResponse,
   EpssResponse,
   KevIdsResponse,
+  KevItem,
   KevResponse,
   ExploitsResponse,
   GeoIPResult,
@@ -80,6 +81,7 @@ export const getEpss = (ids: string[]) =>
 // CISA KEV — GET ?limit= | ?ids=1
 export const getKev = (limit = 200) => api<KevResponse>(`/api/kev${q({ limit })}`);
 export const getKevIds = () => api<KevIdsResponse>('/api/kev?ids=1');
+export const getKevItem = (cve: string) => api<{ item: KevItem | null }>(`/api/kev${q({ cve })}`);
 
 // IP intel — GET ?ip=
 export const getGeoIp = (ip: string) => api<GeoIPResult>(`/api/geoip${q({ ip })}`);
