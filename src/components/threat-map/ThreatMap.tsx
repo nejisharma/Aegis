@@ -20,9 +20,13 @@ import type { ThreatEvent } from '@/types/threat-event';
 
 const MAX_VISIBLE_EVENTS = 50;
 
-// CartoDB dark_all — dark tiles with country labels visible
-const TILE_URL =
-  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+// CartoDB dark_all — dark tiles with country labels visible.
+// CARTO raster basemaps require an API key since 2026 (carto.com/basemaps/apikey);
+// without NEXT_PUBLIC_CARTO_KEY the tiles render with an "API KEY REQUIRED" watermark.
+const CARTO_KEY = process.env.NEXT_PUBLIC_CARTO_KEY;
+const TILE_URL = `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png${
+  CARTO_KEY ? `?key=${CARTO_KEY}` : ''
+}`;
 const TILE_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>';
 

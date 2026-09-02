@@ -4,7 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, GeoJSONSource, Layer, Map as MapLibreMap, type CameraRef, type MapRef } from '@maplibre/maplibre-react-native';
 import { Maximize2, Minus, Plus, X } from 'lucide-react-native';
 import { EventDetailSheet } from './EventDetailSheet';
-import type { StyleSpecification } from '@maplibre/maplibre-gl-style-spec';
 import type { FeatureCollection } from 'geojson';
 import { INDIA_BOUNDARY } from '../data/india-boundary';
 import { SEVERITY_COLORS } from '../lib/constants';
@@ -12,30 +11,12 @@ import type { ThreatEvent } from '../api/types';
 import { useColors, useTheme } from '../theme/ThemeProvider';
 import type { Palette } from '../theme/palettes';
 
-// Same tiles as the website (CartoDB dark_all / light_all). Raster, no API key.
-function makeMapStyle(isDark: boolean, bg: string): StyleSpecification {
-  const variant = isDark ? 'dark_all' : 'light_all';
-  return {
-    version: 8,
-    sources: {
-      carto: {
-        type: 'raster',
-        tiles: [
-          `https://a.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}.png`,
-          `https://b.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}.png`,
-          `https://c.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}.png`,
-        ],
-        tileSize: 256,
-        attribution: '© OpenStreetMap contributors © CARTO',
-        maxzoom: 18,
-      },
-    },
-    layers: [
-      { id: 'bg', type: 'background', paint: { 'background-color': bg } },
-      { id: 'carto', type: 'raster', source: 'carto', paint: { 'raster-opacity': 1 } },
-    ],
-  };
-}
+// OpenFreeMap vector styles (keyless, no usage limits — openfreemap.org).
+// CARTO rasters now watermark every tile without an API key, and a key baked into a
+// store binary would be shared by every install, so we use OpenFreeMap instead.
+// "dark" / "positron" are OpenMapTiles ports of the CARTO styles the website uses.
+const MAP_STYLE_DARK = 'https://tiles.openfreemap.org/styles/dark';
+const MAP_STYLE_LIGHT = 'https://tiles.openfreemap.org/styles/positron';
 
 /** Great-circle arc between two points, so long attack lines curve like the web version. */
 function arc(lat1: number, lng1: number, lat2: number, lng2: number, steps = 24): [number, number][] {
@@ -119,7 +100,7 @@ function MapView({
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
   const [selected, setSelected] = useState<ThreatEvent | null>(null);
-  const mapStyle = useMemo(() => makeMapStyle(isDark, colors.bg), [isDark, colors.bg]);
+  const mapStyle = isDark ? MAP_STYLE_DARK : MAP_STYLE_LIGHT;
 
   /** Nearest event endpoint to a tapped coordinate, within ~24 px at the current zoom. */
   const pickNearest = async (lng: number, lat: number): Promise<ThreatEvent | null> => {
@@ -258,9 +239,9 @@ function MapView({
         </GeoJSONSource>
       </MapLibreMap>
 
-      {/* CARTO basemap terms require visible attribution (the website shows the same line). */}
-      <Text style={styles.attribution} onPress={() => Linking.openURL('https://carto.com/attributions')}>
-        © OpenStreetMap © CARTO
+      {/* OSM and OpenMapTiles require visible attribution; OpenFreeMap serves the tiles. */}
+      <Text style={styles.attribution} onPress={() => Linking.openURL('https://openfreemap.org')}>
+        © OpenStreetMap © OpenMapTiles
       </Text>
 
       {onClose ? (
